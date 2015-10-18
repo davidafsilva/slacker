@@ -45,7 +45,7 @@ import pt.davidafsilva.slacker.api.SlackRequest;
  *
  * @author david
  */
-public class InboundHttpServerVerticle extends AbstractVerticle {
+public final class InboundHttpServerVerticle extends AbstractVerticle {
 
   // the logger
   private static final Logger LOGGER = LoggerFactory.getLogger(InboundHttpServerVerticle.class);
@@ -97,7 +97,7 @@ public class InboundHttpServerVerticle extends AbstractVerticle {
   private void executeCommand(final RoutingContext context) {
     LOGGER.info("received command request");
     // create the request data from the POST request
-    final Optional<SlackRequest> slackRequest = SlackRequest.parse(context);
+    final Optional<SlackRequest> slackRequest = SlackRequestImpl.parse(context);
     LOGGER.info("request data: {}", slackRequest);
 
     // handle the request by the command handler
