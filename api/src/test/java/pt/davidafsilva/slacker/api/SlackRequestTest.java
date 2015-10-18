@@ -65,10 +65,7 @@ public class SlackRequestTest {
   private static final String TEXT_VALUE = "!boo woop woop";
   private static final String REQUEST_JSON = "{\n" +
       "  \"token\" : \"token\",\n" +
-      "  \"timestamp\" : {\n" +
-      "    \"epochSecond\" : 1355517523,\n" +
-      "    \"nano\" : 5000\n" +
-      "  },\n" +
+      "  \"timestamp\" : \"2012-12-14T20:38:43.000005Z\",\n" +
       "  \"teamIdentifier\" : \"12345\",\n" +
       "  \"teamDomain\" : \"domain 1\",\n" +
       "  \"channelId\" : \"channel 1\",\n" +

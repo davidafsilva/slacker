@@ -26,6 +26,9 @@ package pt.davidafsilva.slacker.api;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -162,6 +165,7 @@ public final class SlackRequest {
    *
    * @return the request timestamp
    */
+  @JsonSerialize(using = ToStringSerializer.class)
   public Instant getTimestamp() {
     return timestamp;
   }
