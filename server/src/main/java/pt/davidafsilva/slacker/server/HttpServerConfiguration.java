@@ -71,7 +71,15 @@ import io.vertx.core.net.JksOptions;
  *
  * @author david
  */
-public final class HttpServerConfiguration {
+final class HttpServerConfiguration {
+
+  // the default value for HTTP port
+  static final int DEFAULT_HTTP_PORT = 8080;
+  // the default value for the use SSL flag
+  static final boolean DEFAULT_USE_SSL = false;
+
+  // invalid configuration message
+  static final String MISSING_PROPERTIES = "some required properties are missing: %s";
 
   // private constructor
   private HttpServerConfiguration() {}
@@ -89,8 +97,8 @@ public final class HttpServerConfiguration {
 
     // create the http server options
     final HttpServerOptions options = new HttpServerOptions()
-        .setPort(config.getInteger(ConfigurationVariable.HTTP_PORT.name(), 8080))
-        .setSsl(config.getBoolean(ConfigurationVariable.USE_SSL.name(), false));
+        .setPort(config.getInteger(ConfigurationVariable.HTTP_PORT.name(), DEFAULT_HTTP_PORT))
+        .setSsl(config.getBoolean(ConfigurationVariable.USE_SSL.name(), DEFAULT_USE_SSL));
 
     // setup the required SSL parameters
     if (options.isSsl()) {
@@ -122,8 +130,7 @@ public final class HttpServerConfiguration {
         .filter(prop -> !config.containsKey(prop))
         .toArray(String[]::new);
     if (missing.length > 0) {
-      throw new IllegalStateException(
-          "some required properties are missing: " + Arrays.toString(missing));
+      throw new IllegalStateException(String.format(MISSING_PROPERTIES, Arrays.toString(missing)));
     }
   }
 
@@ -146,7 +153,7 @@ public final class HttpServerConfiguration {
   }
 
   // the enumeration of the support configuration variables
-  private enum ConfigurationVariable {
+  enum ConfigurationVariable {
     HTTP_PORT(Integer::valueOf),
     USE_SSL(Boolean::valueOf),
     KEY_STORE_FILE(Objects::toString),
