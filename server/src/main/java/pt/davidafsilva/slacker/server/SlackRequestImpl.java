@@ -51,7 +51,7 @@ import static java.time.temporal.ChronoField.NANO_OF_SECOND;
  *
  * @author David Silva
  */
-public final class SlackRequestImpl implements SlackRequest {
+final class SlackRequestImpl implements SlackRequest {
 
   // the logger
   private static final Logger LOGGER = LoggerFactory.getLogger(SlackRequestImpl.class);
