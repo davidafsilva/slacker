@@ -29,18 +29,12 @@ package pt.davidafsilva.slacker.api;
 import java.time.Instant;
 
 /**
- * The slack request data
+ * The request information for the (remote) slacker command execution.
  *
  * @author david
+ * @since 1.0
  */
-public interface SlackRequest {
-
-  /**
-   * Returns the API token
-   *
-   * @return the API token
-   */
-  String getToken();
+public interface SlackerRequest {
 
   /**
    * Returns the request timestamp

@@ -37,19 +37,18 @@ import java.util.Optional;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
-import pt.davidafsilva.slacker.api.SlackRequest;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for the {@link SlackRequestImpl} object.
+ * Unit tests for the {@link SlackRequest} object.
  *
  * @author david
  */
 @RunWith(Parameterized.class)
-public class SlackRequestImplTest {
+public class SlackRequestTest {
 
   // test parameters values
   private static final String TOKEN_VALUE = "token";
@@ -80,16 +79,16 @@ public class SlackRequestImplTest {
   @Parameterized.Parameters
   public static Iterable<Object[]> testDataSupplier() {
     return Arrays.asList(new Object[][]{
-            {create(Optional.of(SlackRequestImpl.REQUEST_TOKEN)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_TIMESTAMP)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_TEAM_ID)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_TEAM_DOMAIN)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_CHANNEL_ID)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_CHANNEL_NAME)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_USER_ID)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_USER_NAME)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_TRIGGER_WORD)), false},
-            {create(Optional.of(SlackRequestImpl.REQUEST_TEXT)), false},
+            {create(Optional.of(SlackRequest.REQUEST_TOKEN)), false},
+            {create(Optional.of(SlackRequest.REQUEST_TIMESTAMP)), false},
+            {create(Optional.of(SlackRequest.REQUEST_TEAM_ID)), false},
+            {create(Optional.of(SlackRequest.REQUEST_TEAM_DOMAIN)), false},
+            {create(Optional.of(SlackRequest.REQUEST_CHANNEL_ID)), false},
+            {create(Optional.of(SlackRequest.REQUEST_CHANNEL_NAME)), false},
+            {create(Optional.of(SlackRequest.REQUEST_USER_ID)), false},
+            {create(Optional.of(SlackRequest.REQUEST_USER_NAME)), false},
+            {create(Optional.of(SlackRequest.REQUEST_TRIGGER_WORD)), false},
+            {create(Optional.of(SlackRequest.REQUEST_TEXT)), false},
             {create(Optional.empty()), true},
         }
     );
@@ -105,16 +104,16 @@ public class SlackRequestImplTest {
     final RoutingContext context = mock(RoutingContext.class);
     final HttpServerRequest request = mock(HttpServerRequest.class);
     final MultiMap attributes = mock(MultiMap.class);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_TOKEN, TOKEN_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_TIMESTAMP, TIMESTAMP_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_TEAM_ID, TEAM_ID_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_TEAM_DOMAIN, TEAM_DOMAIN_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_CHANNEL_ID, CHANNEL_ID_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_CHANNEL_NAME, CHANNEL_NAME_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_USER_ID, USER_ID_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_USER_NAME, USER_NAME_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_TRIGGER_WORD, TRIGGER_WORD_VALUE, excluded);
-    addAttribute(attributes, SlackRequestImpl.REQUEST_TEXT, TEXT_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_TOKEN, TOKEN_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_TIMESTAMP, TIMESTAMP_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_TEAM_ID, TEAM_ID_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_TEAM_DOMAIN, TEAM_DOMAIN_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_CHANNEL_ID, CHANNEL_ID_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_CHANNEL_NAME, CHANNEL_NAME_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_USER_ID, USER_ID_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_USER_NAME, USER_NAME_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_TRIGGER_WORD, TRIGGER_WORD_VALUE, excluded);
+    addAttribute(attributes, SlackRequest.REQUEST_TEXT, TEXT_VALUE, excluded);
     when(request.formAttributes()).thenReturn(attributes);
     when(context.request()).thenReturn(request);
     return context;
@@ -145,14 +144,14 @@ public class SlackRequestImplTest {
    * @param context   the test run routing context
    * @param isPresent if the expected output has or not a request present
    */
-  public SlackRequestImplTest(final RoutingContext context, final boolean isPresent) {
+  public SlackRequestTest(final RoutingContext context, final boolean isPresent) {
     this.context = context;
     this.isPresent = isPresent;
   }
 
   @Test
   public void parseContext() {
-    final Optional<SlackRequest> requestOptional = SlackRequestImpl.parse(context);
+    final Optional<SlackRequest> requestOptional = SlackRequest.parse(context);
     assertEquals(isPresent, requestOptional.isPresent());
     requestOptional.ifPresent(request -> {
       assertEquals(TOKEN_VALUE, request.getToken());

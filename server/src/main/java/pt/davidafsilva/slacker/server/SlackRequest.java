@@ -41,7 +41,6 @@ import io.vertx.core.json.Json;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
-import pt.davidafsilva.slacker.api.SlackRequest;
 
 import static java.time.temporal.ChronoField.INSTANT_SECONDS;
 import static java.time.temporal.ChronoField.NANO_OF_SECOND;
@@ -51,10 +50,10 @@ import static java.time.temporal.ChronoField.NANO_OF_SECOND;
  *
  * @author David Silva
  */
-final class SlackRequestImpl implements SlackRequest {
+final class SlackRequest {
 
   // the logger
-  private static final Logger LOGGER = LoggerFactory.getLogger(SlackRequestImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SlackRequest.class);
 
   // the supplier for the exception thrown when a POST request field is missing
   private static final Function<String, Supplier<RuntimeException>> NO_VALUE_EXCEPTION = field ->
@@ -105,7 +104,7 @@ final class SlackRequestImpl implements SlackRequest {
   private String text;
 
   // private constructor
-  private SlackRequestImpl() {}
+  private SlackRequest() {}
 
   /**
    * Creates a slack request from the given POST request context.
@@ -118,7 +117,7 @@ final class SlackRequestImpl implements SlackRequest {
   public static Optional<SlackRequest> parse(final RoutingContext context) {
     Optional<SlackRequest> optionalRequest;
     try {
-      final SlackRequestImpl request = new SlackRequestImpl();
+      final SlackRequest request = new SlackRequest();
       request.token = getPostValue(context, REQUEST_TOKEN);
       request.timestamp = Instant.from(
           TIMESTAMP_FORMATTER.parse(getPostValue(context, REQUEST_TIMESTAMP)));
@@ -157,7 +156,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the API token
    */
-  @Override
   public String getToken() {
     return token;
   }
@@ -167,7 +165,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the request timestamp
    */
-  @Override
   @JsonSerialize(using = ToStringSerializer.class)
   public Instant getTimestamp() {
     return timestamp;
@@ -178,7 +175,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the team identifier
    */
-  @Override
   public String getTeamIdentifier() {
     return teamIdentifier;
   }
@@ -188,7 +184,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the domain name
    */
-  @Override
   public String getTeamDomain() {
     return teamDomain;
   }
@@ -198,7 +193,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the channel id
    */
-  @Override
   public String getChannelId() {
     return channelId;
   }
@@ -208,7 +202,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the channel name
    */
-  @Override
   public String getChannelName() {
     return channelName;
   }
@@ -218,7 +211,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the user identifier
    */
-  @Override
   public String getUserId() {
     return userId;
   }
@@ -228,7 +220,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the user name
    */
-  @Override
   public String getUserName() {
     return userName;
   }
@@ -238,7 +229,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the trigger command
    */
-  @Override
   public String getTrigger() {
     return trigger;
   }
@@ -248,7 +238,6 @@ final class SlackRequestImpl implements SlackRequest {
    *
    * @return the full text message
    */
-  @Override
   public String getText() {
     return text;
   }

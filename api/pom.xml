@@ -16,7 +16,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
             <version>${vertx.version}</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 

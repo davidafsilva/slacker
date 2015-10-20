@@ -38,7 +38,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import pt.davidafsilva.slacker.api.SlackRequest;
 
 /**
  * The hello-back service for slack
@@ -97,7 +96,7 @@ public final class InboundHttpServerVerticle extends AbstractVerticle {
   private void executeCommand(final RoutingContext context) {
     LOGGER.info("received command request");
     // create the request data from the POST request
-    final Optional<SlackRequest> slackRequest = SlackRequestImpl.parse(context);
+    final Optional<SlackRequest> slackRequest = SlackRequest.parse(context);
     LOGGER.info("request data: {}", slackRequest);
 
     // handle the request by the command handler
