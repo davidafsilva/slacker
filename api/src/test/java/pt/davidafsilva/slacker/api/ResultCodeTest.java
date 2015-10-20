@@ -28,9 +28,13 @@ package pt.davidafsilva.slacker.api;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Simple unitary tests for the {@link ResultCode} HTTP status code mapping
@@ -38,6 +42,15 @@ import static org.junit.Assert.assertEquals;
  * @author david
  */
 public class ResultCodeTest {
+
+  @Test
+  public void test_nonNullMapping() {
+    assertTrue(Arrays.stream(ResultCode.values()) // "shut-up" missing coverage for values()
+        .map(ResultCode::name) // "shut-up" missing coverage for valueOf()
+        .map(ResultCode::valueOf)
+        .map(ResultCode::getHttpStatus)
+        .noneMatch(Objects::isNull));
+  }
 
   @Test
   public void test_httpCodeMapping() {
