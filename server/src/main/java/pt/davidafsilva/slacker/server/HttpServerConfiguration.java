@@ -82,7 +82,9 @@ final class HttpServerConfiguration {
   static final String MISSING_PROPERTIES = "some required properties are missing: %s";
 
   // private constructor
-  private HttpServerConfiguration() {}
+  private HttpServerConfiguration() {
+    throw new UnsupportedOperationException("no no no");
+  }
 
   /**
    * Sets up the http server configuration based on the available environment variables (SLACK_*)

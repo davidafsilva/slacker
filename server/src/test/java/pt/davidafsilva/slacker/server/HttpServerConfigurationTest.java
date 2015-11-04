@@ -30,7 +30,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -55,6 +57,14 @@ public class HttpServerConfigurationTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Test
+  public void test_constructor() throws Exception {
+    thrown.expect(InvocationTargetException.class);
+    Constructor<HttpServerConfiguration> c = HttpServerConfiguration.class.getDeclaredConstructor();
+    c.setAccessible(true);
+    c.newInstance();
+  }
+
+  @Test
   public void test_configuration_default() {
     final HttpServerOptions options = HttpServerConfiguration.setup(new JsonObject());
     assertNotNull(options);
@@ -77,8 +87,8 @@ public class HttpServerConfigurationTest {
     thrown.expectMessage(String.format(HttpServerConfiguration.MISSING_PROPERTIES,
         "[KEY_STORE_FILE, KEY_STORE_PASS]"));
     HttpServerConfiguration.setup(new JsonObject()
-            .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 8443)
-            .put(HttpServerConfiguration.ConfigurationVariable.USE_SSL.name(), true)
+        .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 8443)
+        .put(HttpServerConfiguration.ConfigurationVariable.USE_SSL.name(), true)
     );
   }
 
@@ -88,9 +98,9 @@ public class HttpServerConfigurationTest {
     thrown.expectMessage(String.format(HttpServerConfiguration.MISSING_PROPERTIES,
         "[KEY_STORE_PASS]"));
     HttpServerConfiguration.setup(new JsonObject()
-            .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 8443)
-            .put(HttpServerConfiguration.ConfigurationVariable.USE_SSL.name(), true)
-            .put(HttpServerConfiguration.ConfigurationVariable.KEY_STORE_FILE.name(), "xpto.jks")
+        .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 8443)
+        .put(HttpServerConfiguration.ConfigurationVariable.USE_SSL.name(), true)
+        .put(HttpServerConfiguration.ConfigurationVariable.KEY_STORE_FILE.name(), "xpto.jks")
     );
   }
 
@@ -100,19 +110,19 @@ public class HttpServerConfigurationTest {
     thrown.expectMessage(String.format(HttpServerConfiguration.MISSING_PROPERTIES,
         "[KEY_STORE_FILE]"));
     HttpServerConfiguration.setup(new JsonObject()
-            .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 8443)
-            .put(HttpServerConfiguration.ConfigurationVariable.USE_SSL.name(), true)
-            .put(HttpServerConfiguration.ConfigurationVariable.KEY_STORE_PASS.name(), "xpto")
+        .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 8443)
+        .put(HttpServerConfiguration.ConfigurationVariable.USE_SSL.name(), true)
+        .put(HttpServerConfiguration.ConfigurationVariable.KEY_STORE_PASS.name(), "xpto")
     );
   }
 
   @Test
   public void test_configuration_sslConfig() {
     final HttpServerOptions options = HttpServerConfiguration.setup(new JsonObject()
-            .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 8443)
-            .put(HttpServerConfiguration.ConfigurationVariable.USE_SSL.name(), true)
-            .put(HttpServerConfiguration.ConfigurationVariable.KEY_STORE_FILE.name(), "file")
-            .put(HttpServerConfiguration.ConfigurationVariable.KEY_STORE_PASS.name(), "xpto")
+        .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 8443)
+        .put(HttpServerConfiguration.ConfigurationVariable.USE_SSL.name(), true)
+        .put(HttpServerConfiguration.ConfigurationVariable.KEY_STORE_FILE.name(), "file")
+        .put(HttpServerConfiguration.ConfigurationVariable.KEY_STORE_PASS.name(), "xpto")
     );
     assertNotNull(options);
     assertEquals(8443, options.getPort());
