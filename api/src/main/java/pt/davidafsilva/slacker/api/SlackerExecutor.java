@@ -27,16 +27,57 @@ package pt.davidafsilva.slacker.api;
  */
 
 import io.vertx.core.AsyncResultHandler;
+import io.vertx.core.Future;
+import io.vertx.core.Verticle;
 
 /**
- * This abstract implementation serves as a baseline for slacker command executors.
- * It includes the communication protocol for registering the executor for the supported command
- * as well as utility methods for creating the sending the execution results.
+ * <p>
+ * This interface defines the contract for the slacker executors as they're all bound to have
+ * a specific set of properties, such as an {@link #identifier()} and help {@link #description()}.
+ * </p>
+ * <p>
+ * The executors {@link #execute(SlackerRequest, Future)} method will be called by the
+ * same thread that received the request in a asynchronous fashion, which means the execution
+ * result will be supplied asynchronously via the {@link AsyncResultHandler}, avoiding blocking the
+ * listener thread.
+ * </p>
+ * <p>
+ * This interface extends the {@link Verticle} as all executors will be bound to a verticle
+ * lifecycle as well, but with a little caveat. Executors require a certain protocol in order for
+ * them to be registered within the slacker-server and be able to receive incoming requests via
+ * the event-bus.
+ * The protocol is described as follows, step by step:
+ * </p>
+ * <pre>
+ *   Slacker Executor = SE
+ *     Slacker Server = SS
+ *
+ * SE ----&gt; [ HELLO REQ ] ----&gt; SS
+ *      {
+ *        "i": &lt;identifier&gt;,
+ *        "d": &lt;description&gt;,
+ *        "v": &lt;version&gt;
+ *      }
+ * SE &lt;---- [ HELLO RSP } &lt;---- SS
+ *      {
+ *        "s": &lt;true|false&gt;,
+ *        "m": &lt;message&gt;
+ *      }
+ * </pre>
+ * <p>
+ * All HELLO REQ message fields are straightforward enough. The identifier is used to identify the
+ * executor as well as the channel command. The description is used to display at the help message.
+ * Finally, the version is used to ensure that only instances with the same or newer (in-service
+ * upgrade) version are enabled.
+ *
+ * The HELLO RSP message contains the response status along with a response message, e.g. used to
+ * include the failure reason.
+ * </p>
  *
  * @author david
  * @since 1.0
  */
-public interface SlackerExecutor {
+public interface SlackerExecutor extends Verticle {
 
   /**
    * Returns the identifier of the command that this executor will be listening to.
@@ -61,11 +102,18 @@ public interface SlackerExecutor {
   String description();
 
   /**
+   * Returns a version of the slacker executor that this implementation is supporting.
+   *
+   * @return the slacker executor version
+   */
+  String version();
+
+  /**
    * Invoke and handles the incoming request, posting the execution result asynchronously to the
-   * specified result handler.
+   * specified future.
    *
    * @param request the incoming slacker request
-   * @param result  the outgoing result handler with the actual execution result
+   * @param result  the outgoing result with the actual execution result
    */
-  void execute(final SlackerRequest request, final AsyncResultHandler<SlackerResponse> result);
+  void execute(final SlackerRequest request, final Future<SlackerResponse> result);
 }
