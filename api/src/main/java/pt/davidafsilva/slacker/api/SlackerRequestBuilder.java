@@ -29,6 +29,8 @@ package pt.davidafsilva.slacker.api;
 import java.time.Instant;
 import java.util.Objects;
 
+import io.vertx.core.json.Json;
+
 /**
  * A builder for a fluent creation of {@link SlackerRequest} messages.
  *
@@ -205,6 +207,11 @@ public final class SlackerRequestBuilder {
     @Override
     public String getText() {
       return text;
+    }
+
+    @Override
+    public String toString() {
+      return Json.encodePrettily(this);
     }
   }
 }

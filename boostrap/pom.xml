@@ -40,11 +40,11 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>io.vertx.core.Starter</mainClass>
+                            <mainClass>io.vertx.core.Launcher</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Main-Verticle>
-                                pt.davidafsilva.slacker.server.InboundHttpServerVerticle
+                                pt.davidafsilva.slacker.server.HttpServerVerticle
                             </Main-Verticle>
                         </manifestEntries>
                     </archive>

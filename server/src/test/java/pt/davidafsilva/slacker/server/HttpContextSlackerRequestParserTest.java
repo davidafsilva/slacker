@@ -26,10 +26,14 @@ package pt.davidafsilva.slacker.server;
  * #L%
  */
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
@@ -37,21 +41,21 @@ import java.util.Optional;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
+import pt.davidafsilva.slacker.api.SlackerRequest;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for the {@link SlackRequest} object.
+ * Unit tests for the {@link HttpContextSlackerRequestParser} object.
  *
  * @author david
  */
 @RunWith(Parameterized.class)
-public class SlackRequestTest {
+public class HttpContextSlackerRequestParserTest {
 
   // test parameters values
-  private static final String TOKEN_VALUE = "token";
   private static final long TIMESTAMP_SECONDS_VALUE = 1355517523;
   private static final long TIMESTAMP_NANOS_VALUE = 5000;
   private static final String TIMESTAMP_VALUE = "1355517523.000005";
@@ -63,32 +67,19 @@ public class SlackRequestTest {
   private static final String USER_NAME_VALUE = "david";
   private static final String TRIGGER_WORD_VALUE = "!boo";
   private static final String TEXT_VALUE = "!boo woop woop";
-  private static final String REQUEST_JSON = "{\n" +
-      "  \"token\" : \"token\",\n" +
-      "  \"timestamp\" : \"2012-12-14T20:38:43.000005Z\",\n" +
-      "  \"teamIdentifier\" : \"12345\",\n" +
-      "  \"teamDomain\" : \"domain 1\",\n" +
-      "  \"channelId\" : \"channel 1\",\n" +
-      "  \"channelName\" : \"#boo\",\n" +
-      "  \"userId\" : \"1\",\n" +
-      "  \"userName\" : \"david\",\n" +
-      "  \"trigger\" : \"!boo\",\n" +
-      "  \"text\" : \"!boo woop woop\"\n" +
-      "}";
 
   @Parameterized.Parameters
   public static Iterable<Object[]> testDataSupplier() {
     return Arrays.asList(new Object[][]{
-            {create(Optional.of(SlackRequest.REQUEST_TOKEN)), false},
-            {create(Optional.of(SlackRequest.REQUEST_TIMESTAMP)), false},
-            {create(Optional.of(SlackRequest.REQUEST_TEAM_ID)), false},
-            {create(Optional.of(SlackRequest.REQUEST_TEAM_DOMAIN)), false},
-            {create(Optional.of(SlackRequest.REQUEST_CHANNEL_ID)), false},
-            {create(Optional.of(SlackRequest.REQUEST_CHANNEL_NAME)), false},
-            {create(Optional.of(SlackRequest.REQUEST_USER_ID)), false},
-            {create(Optional.of(SlackRequest.REQUEST_USER_NAME)), false},
-            {create(Optional.of(SlackRequest.REQUEST_TRIGGER_WORD)), false},
-            {create(Optional.of(SlackRequest.REQUEST_TEXT)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TIMESTAMP)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEAM_ID)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEAM_DOMAIN)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_CHANNEL_ID)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_CHANNEL_NAME)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_USER_ID)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_USER_NAME)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TRIGGER_WORD)), false},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEXT)), false},
             {create(Optional.empty()), true},
         }
     );
@@ -104,16 +95,15 @@ public class SlackRequestTest {
     final RoutingContext context = mock(RoutingContext.class);
     final HttpServerRequest request = mock(HttpServerRequest.class);
     final MultiMap attributes = mock(MultiMap.class);
-    addAttribute(attributes, SlackRequest.REQUEST_TOKEN, TOKEN_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_TIMESTAMP, TIMESTAMP_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_TEAM_ID, TEAM_ID_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_TEAM_DOMAIN, TEAM_DOMAIN_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_CHANNEL_ID, CHANNEL_ID_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_CHANNEL_NAME, CHANNEL_NAME_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_USER_ID, USER_ID_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_USER_NAME, USER_NAME_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_TRIGGER_WORD, TRIGGER_WORD_VALUE, excluded);
-    addAttribute(attributes, SlackRequest.REQUEST_TEXT, TEXT_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TIMESTAMP, TIMESTAMP_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEAM_ID, TEAM_ID_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEAM_DOMAIN, TEAM_DOMAIN_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_CHANNEL_ID, CHANNEL_ID_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_CHANNEL_NAME, CHANNEL_NAME_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_USER_ID, USER_ID_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_USER_NAME, USER_NAME_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TRIGGER_WORD, TRIGGER_WORD_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEXT, TEXT_VALUE, excluded);
     when(request.formAttributes()).thenReturn(attributes);
     when(context.request()).thenReturn(request);
     return context;
@@ -134,6 +124,9 @@ public class SlackRequestTest {
     }
   }
 
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
   // test run parameters
   private final RoutingContext context;
   private final boolean isPresent;
@@ -144,17 +137,26 @@ public class SlackRequestTest {
    * @param context   the test run routing context
    * @param isPresent if the expected output has or not a request present
    */
-  public SlackRequestTest(final RoutingContext context, final boolean isPresent) {
+  public HttpContextSlackerRequestParserTest(final RoutingContext context, final boolean isPresent) {
     this.context = context;
     this.isPresent = isPresent;
   }
 
   @Test
+  public void test_constructor() throws Exception {
+    thrown.expect(InvocationTargetException.class);
+    Constructor<HttpContextSlackerRequestParser> c = HttpContextSlackerRequestParser.class.
+        getDeclaredConstructor();
+    c.setAccessible(true);
+    c.newInstance();
+  }
+
+  @Test
   public void parseContext() {
-    final Optional<SlackRequest> requestOptional = SlackRequest.parse(context);
+    final Optional<SlackerRequest> requestOptional = HttpContextSlackerRequestParser
+        .parse(context);
     assertEquals(isPresent, requestOptional.isPresent());
     requestOptional.ifPresent(request -> {
-      assertEquals(TOKEN_VALUE, request.getToken());
       assertEquals(Instant.ofEpochSecond(TIMESTAMP_SECONDS_VALUE, TIMESTAMP_NANOS_VALUE),
           request.getTimestamp());
       assertEquals(TEAM_ID_VALUE, request.getTeamIdentifier());
@@ -165,7 +167,6 @@ public class SlackRequestTest {
       assertEquals(USER_NAME_VALUE, request.getUserName());
       assertEquals(TRIGGER_WORD_VALUE, request.getTrigger());
       assertEquals(TEXT_VALUE, request.getText());
-      assertEquals(REQUEST_JSON, request.toString());
     });
   }
 }

@@ -222,5 +222,6 @@ public class SlackerRequestBuilderTest {
     assertEquals("davidafsilva", request.getTeamIdentifier());
     assertEquals("!", request.getTrigger());
     assertEquals("!test", request.getText());
+    assertNotNull(request.toString());
   }
 }

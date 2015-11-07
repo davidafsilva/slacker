@@ -187,6 +187,9 @@ public class HttpServerConfigurationTest {
   @Test
   public void test_configurationVariablesEnvPrefix() {
     assertTrue(Arrays.stream(HttpServerConfiguration.ConfigurationVariable.values())
+        // map to name and back to enum to avoid coverage "missing valueOf()" - stoopid
+        .map(HttpServerConfiguration.ConfigurationVariable::name)
+        .map(HttpServerConfiguration.ConfigurationVariable::valueOf)
         .map(HttpServerConfiguration.ConfigurationVariable::environmentName)
         .allMatch(env -> env.startsWith("SLACKER_")));
   }
