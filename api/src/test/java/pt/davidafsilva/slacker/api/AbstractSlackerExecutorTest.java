@@ -31,19 +31,22 @@ import org.junit.runner.RunWith;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.test.core.VertxTestBase;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for the {@link AbstractSlackerExecutor}.
@@ -51,7 +54,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
  * @author david
  */
 @RunWith(VertxUnitRunner.class)
-public class AbstractSlackerExecutorTest extends VertxTestBase {
+public class AbstractSlackerExecutorTest extends SlackerBaseTest {
 
   // the request used for the test execution
   private static final SlackerRequest REQUEST = new SlackerRequestBuilder()
@@ -116,12 +119,22 @@ public class AbstractSlackerExecutorTest extends VertxTestBase {
   @Test
   public void test_failDeploy() throws InterruptedException {
     deployServer(r -> r.fail(0, "dummy reason"));
-    final CountDownLatch executorLatch = new CountDownLatch(1);
-    vertx.deployVerticle(new TestSlackerExecutor(Future::complete), res -> {
-      assertFalse("deployed executor when wasn't expected", res.succeeded());
-      executorLatch.countDown();
-    });
-    awaitLatch(executorLatch);
+    assertFalse("deployed executor when wasn't expected",
+        deployVerticle(new TestSlackerExecutor(Future::complete)).succeeded());
+  }
+
+  @Test
+  public void test_successDeploy_failResponse() throws InterruptedException {
+    deployServer(r -> r.reply(new JsonObject().put("s", true)));
+
+    // deploy executor
+    assertTrue("unable to deploy executor",
+        deployVerticle(new TestSlackerExecutor(f -> f.fail("test-fail"))).succeeded());
+
+    // test sending message with a fail response
+    final AsyncResult<Message<Object>> reply = sendRequest("slacker-test", REQUEST);
+    assertFalse(reply.succeeded());
+    assertEquals("test-fail", reply.cause().getMessage());
   }
 
   @Test
@@ -139,67 +152,33 @@ public class AbstractSlackerExecutorTest extends VertxTestBase {
     executeDeployWithMessage(ERROR);
   }
 
-  @Test
-  public void test_successDeploy_failResponse() throws InterruptedException {
-    deployServer(r -> r.reply(new JsonObject().put("s", true)));
-    final CountDownLatch executorLatch = new CountDownLatch(1);
-    vertx.deployVerticle(new TestSlackerExecutor(f -> f.fail("test-fail")), res -> {
-      assertTrue("unable to deploy executor", res.succeeded());
-      executorLatch.countDown();
-    });
-    awaitLatch(executorLatch);
-
-    // test sending message with a fail response
-    final CountDownLatch msgLatch = new CountDownLatch(1);
-    vertx.eventBus().send("slacker-test", REQUEST, new DeliveryOptions()
-        .setCodecName(SlackerRequestMessageCodec.NAME), reply -> {
-      assertFalse(reply.succeeded());
-      assertEquals("test-fail", reply.cause().getMessage());
-      msgLatch.countDown();
-    });
-    awaitLatch(msgLatch);
+  private void deployServer(final Consumer<Message<Object>> replyFunc)
+      throws InterruptedException {
+    assertTrue(deployVerticle(new TestSlackerServer(replyFunc)).succeeded());
   }
 
   private void executeDeployWithMessage(final SlackerResponse response)
       throws InterruptedException {
     deployServer(r -> r.reply(new JsonObject().put("s", true)));
-    final CountDownLatch executorLatch = new CountDownLatch(1);
+
+    // deploy executor
     final AbstractSlackerExecutor executor = new TestSlackerExecutor(f -> f.complete(response));
-    vertx.deployVerticle(executor, res -> {
-      assertTrue("unable to deploy executor", res.succeeded());
-      assertNotNull(executor.getVertx());
-      executorLatch.countDown();
-    });
-    awaitLatch(executorLatch);
+    assertTrue("unable to deploy executor", deployVerticle(executor).succeeded());
+    assertNotNull(executor.getVertx());
 
     // test sending message
-    final CountDownLatch msgLatch = new CountDownLatch(1);
-    vertx.eventBus().send("slacker-test", REQUEST, new DeliveryOptions()
-        .setCodecName(SlackerRequestMessageCodec.NAME), reply -> {
-      assertTrue(reply.succeeded());
-      final Message<Object> result = reply.result();
-      assertNotNull(result);
-      assertNotNull(result.body());
-      assertThat(result.body(), instanceOf(SlackerResponse.class));
-      final SlackerResponse sr = SlackerResponse.class.cast(result.body());
-      assertEquals(response.getCode(), sr.getCode());
-      assertEquals(sr.getResponse().isPresent(), sr.getResponse().isPresent());
-      if (sr.getResponse().isPresent()) {
-        assertEquals(response.getResponse().get(), sr.getResponse().get());
-      }
-      msgLatch.countDown();
-    });
-    awaitLatch(msgLatch);
-  }
-
-  private void deployServer(final Consumer<Message<Object>> replyFunc)
-      throws InterruptedException {
-    final CountDownLatch serverLatch = new CountDownLatch(1);
-    vertx.deployVerticle(new TestSlackerServer(replyFunc), res -> {
-      assertTrue(res.succeeded());
-      serverLatch.countDown();
-    });
-    awaitLatch(serverLatch);
+    final AsyncResult<Message<Object>> reply = sendRequest("slacker-test", REQUEST);
+    assertTrue(reply.succeeded());
+    final Message<Object> result = reply.result();
+    assertNotNull(result);
+    assertNotNull(result.body());
+    assertThat(result.body(), instanceOf(SlackerResponse.class));
+    final SlackerResponse sr = SlackerResponse.class.cast(result.body());
+    assertEquals(response.getCode(), sr.getCode());
+    assertEquals(sr.getResponse().isPresent(), sr.getResponse().isPresent());
+    if (sr.getResponse().isPresent()) {
+      assertEquals(response.getResponse().get(), sr.getResponse().get());
+    }
   }
 
   // the dummy test slacker executor
