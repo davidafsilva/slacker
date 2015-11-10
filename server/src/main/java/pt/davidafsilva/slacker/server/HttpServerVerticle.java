@@ -31,6 +31,7 @@ import java.util.Optional;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
@@ -41,7 +42,9 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import pt.davidafsilva.slacker.api.ResultCode;
 import pt.davidafsilva.slacker.api.SlackerRequest;
+import pt.davidafsilva.slacker.api.SlackerRequestMessageCodec;
 import pt.davidafsilva.slacker.api.SlackerResponse;
+import pt.davidafsilva.slacker.api.SlackerResponseMessageCodec;
 
 /**
  * The http server that shall receive the incoming requests from the slack web-hook and
@@ -73,29 +76,35 @@ public final class HttpServerVerticle extends AbstractVerticle {
 
     // POST /command
     router.post("/command")
-        .consumes("application/json")
+        .consumes("application/x-www-form-urlencoded")
         .produces("application/json")
         .handler(this::executeCommand);
 
     // create the http httpServer options by reading the boot configuration
     final HttpServerOptions options = HttpServerConfiguration.setup(config());
-    LOGGER.debug("starting with the following configuration:%n{}", config());
+    LOGGER.debug("starting with the following configuration: {}", config());
 
     // create the actual http httpServer
     httpServer = vertx.createHttpServer(options)
         .requestHandler(router::accept)
         .listen(deployedHandler -> {
           if (deployedHandler.succeeded()) {
-            LOGGER.info(String.format("http httpServer listening at port %s", options.getPort()));
+            LOGGER.info(String.format("slacker-server listening at port %s", options.getPort()));
             startFuture.complete();
           } else {
             startFuture.fail(deployedHandler.cause());
           }
         });
+
+    // register the codecs
+    vertx.eventBus()
+        .registerCodec(new SlackerRequestMessageCodec())
+        .registerCodec(new SlackerResponseMessageCodec());
   }
 
   @Override
   public void stop() throws Exception {
+    LOGGER.info("closing slacker-server..");
     httpServer.close();
   }
 
@@ -111,26 +120,33 @@ public final class HttpServerVerticle extends AbstractVerticle {
     LOGGER.debug("request data: {}", slackRequest);
 
     // dispatch the request to the slacker server
-    slackRequest.ifPresent(r -> vertx.eventBus().send("slacker-server", r, reply -> {
-      LOGGER.info("received reply from slacker-server for request");
-      LOGGER.debug(reply);
+    if (slackRequest.isPresent()) {
+      final SlackerRequest r = slackRequest.get();
+      vertx.eventBus().send("slacker-server", r, new DeliveryOptions()
+          .setCodecName(SlackerRequestMessageCodec.NAME), reply -> {
+        LOGGER.info("received reply from slacker-server for request");
+        LOGGER.debug(reply);
 
-      if (reply.succeeded()) {
-        final Object body = reply.result().body();
-        if (body != null && SlackerResponse.class.isInstance(body)) {
-          LOGGER.info("valid response found");
-          final SlackerResponse response = (SlackerResponse) body;
-          endRequest(context, response.getCode(), response.getResponse());
+        if (reply.succeeded()) {
+          final Object body = reply.result().body();
+          if (body != null && SlackerResponse.class.isInstance(body)) {
+            LOGGER.info("valid response found");
+            final SlackerResponse response = (SlackerResponse) body;
+            endRequest(context, response.getCode(), response.getResponse());
+          } else {
+            // terminate the request, it went ok even though no valid response has been received
+            LOGGER.warn("no valid response object was found");
+            endRequest(context, ResultCode.ERROR, Optional.empty());
+          }
         } else {
-          // terminate the request, it went ok even though no valid response has been received
-          LOGGER.warn("no valid response object was found");
-          endRequest(context, ResultCode.OK, Optional.empty());
+          final String error = String.format(ERROR_RESPONSE_FORMAT, r.getUserId(), r.getUserName());
+          endRequest(context, ResultCode.ERROR, Optional.of(error));
         }
-      } else {
-        final String error = String.format(ERROR_RESPONSE_FORMAT, r.getUserId(), r.getUserName());
-        endRequest(context, ResultCode.ERROR, Optional.of(error));
-      }
-    }));
+      });
+    } else {
+      // fail silently
+      endRequest(context, ResultCode.INVALID, Optional.empty());
+    }
   }
 
   /**
@@ -143,7 +159,7 @@ public final class HttpServerVerticle extends AbstractVerticle {
    */
   private void endRequest(final RoutingContext context, final ResultCode code,
       final Optional<String> response) {
-    LOGGER.info("sending {} response back to the channel", code);
+    LOGGER.info("terminating request with code {} and message {}", code, response);
     final Buffer message = response
         .map(m -> new JsonObject().put("text", m).toString())
         .map(Buffer::buffer)

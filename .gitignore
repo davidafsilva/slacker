@@ -2,3 +2,5 @@
 *.iml
 .idea/
 target/
+file-uploads/
+.vertx/
