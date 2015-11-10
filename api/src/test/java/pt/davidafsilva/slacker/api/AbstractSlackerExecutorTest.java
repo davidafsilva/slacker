@@ -124,6 +124,18 @@ public class AbstractSlackerExecutorTest extends SlackerBaseTest {
   }
 
   @Test
+  public void test_successDeploy_duplicateCodecRegistry() throws InterruptedException {
+    deployServer(r -> r.reply(new JsonObject().put("s", true)));
+
+    // deploy first executor
+    assertTrue("unable to deploy first executor",
+        deployVerticle(new TestSlackerExecutor(Future::complete)).succeeded());
+    // deploy second executor - codecs already register - should not throw an exception
+    assertTrue("unable to deploy second executor",
+        deployVerticle(new TestSlackerExecutor(Future::complete)).succeeded());
+  }
+
+  @Test
   public void test_successDeploy_failResponse() throws InterruptedException {
     deployServer(r -> r.reply(new JsonObject().put("s", true)));
 

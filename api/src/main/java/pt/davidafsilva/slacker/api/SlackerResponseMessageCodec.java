@@ -42,7 +42,7 @@ public final class SlackerResponseMessageCodec
     implements MessageCodec<SlackerResponse, SlackerResponse> {
 
   // the code name
-  static final String NAME = "slacker-rsp";
+  public static final String NAME = "slacker-rsp";
 
   @Override
   public void encodeToWire(final Buffer buffer, final SlackerResponse response) {

@@ -81,9 +81,13 @@ public abstract class AbstractSlackerExecutor implements SlackerExecutor {
    * SlackerResponse} messages.
    */
   private void registerCodecs() {
-    vertx.eventBus()
-        .registerCodec(new SlackerRequestMessageCodec())
-        .registerCodec(new SlackerResponseMessageCodec());
+    try {
+      vertx.eventBus()
+          .registerCodec(new SlackerRequestMessageCodec())
+          .registerCodec(new SlackerResponseMessageCodec());
+    } catch (final IllegalStateException e) {
+      LOGGER.debug("codecs already registered", e);
+    }
   }
 
   @Override

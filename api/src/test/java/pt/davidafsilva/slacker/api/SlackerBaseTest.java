@@ -184,13 +184,51 @@ public class SlackerBaseTest {
   }
 
   /**
-   * Awaits at the most 30 seconds for the latch to reach 0.
+   * Executes the given function around a count down latch with a 15 second timeout.
+   * The functions is responsible for calling the {@link CountDownLatch#countDown()} in order for
+   * the method complete its execution without timing out.
+   *
+   * @param consumer the code to be executed
+   */
+  protected void wrapExec(final Consumer<CountDownLatch> consumer) {
+    wrapExec(consumer, 15, TimeUnit.SECONDS);
+  }
+
+  /**
+   * Executes the given function around a count down latch with the specified timeout settings.
+   * The functions is responsible for calling the {@link CountDownLatch#countDown()} in order for
+   * the method complete its execution without timing out.
+   *
+   * @param consumer the code to be executed
+   * @param time     the amount of time to wait
+   * @param unit     the unit for the given amount of time
+   */
+  protected void wrapExec(final Consumer<CountDownLatch> consumer, final int time,
+      final TimeUnit unit) {
+    final CountDownLatch latch = new CountDownLatch(1);
+    consumer.accept(latch);
+    awaitLatch(latch, time, unit);
+  }
+
+  /**
+   * Awaits at the most 15 seconds for the latch to reach 0.
    *
    * @param latch the latch to wait on.
    */
   protected void awaitLatch(final CountDownLatch latch) {
+    awaitLatch(latch, 15, TimeUnit.SECONDS);
+  }
+
+  /**
+   * Awaits at the most 30 seconds for the latch to reach 0.
+   *
+   * @param latch the latch to wait on.
+   * @param time  the amount of time to wait
+   * @param unit  the unit for the given amount of time
+   */
+  protected void awaitLatch(final CountDownLatch latch, final int time, final TimeUnit unit) {
     try {
-      latch.await(30, TimeUnit.SECONDS);
+      assertTrue("execution timeout", latch.await(time, unit));
     } catch (final InterruptedException e) {
       fail("thread got interrupted: " + e.getMessage());
     }
