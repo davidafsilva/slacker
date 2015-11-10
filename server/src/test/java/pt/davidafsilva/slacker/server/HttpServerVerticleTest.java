@@ -78,7 +78,10 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
   @Override
   public void setup() throws Exception {
     super.setup();
-    assertTrue("unable to deploy server", deployVerticle(new HttpServerVerticle()).succeeded());
+    assertTrue("unable to deploy server", deployVerticle(new HttpServerVerticle(),
+        new DeploymentOptions().setConfig(new JsonObject()
+            .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 10001)))
+        .succeeded());
   }
 
   @Test
