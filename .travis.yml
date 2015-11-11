@@ -1,0 +1,10 @@
+language: java
+jdk:
+- oraclejdk8
+script:
+- mvn clean install
+after_success:
+- mvn jacoco:report coveralls:report
+env:
+  global:
+    secure: JiFDUhyKZ6AUelunpsjIHOBpDh9AvfzR9PIBgWX3j3Xtjm5eZCN5FzkSDXwG6bHWxHX6GOc9tTysxMUa/4S4t+NgQaRuw43uQB865A6k9OTgE5VN48WsxOJXBgCd9zCnWmAhvXl2Qd/YBHY2MuR2633zg76ctM6c9iVXoML5lMTVWQCUp0bRt7X4K+53plmAIwQY2q+UPjOiFiQVonv/W4XrlgiHf2F4C3QHJkXmR5gme1VljA0QKiX36cPHkGsdxkSJi/vZow2YMsAxq8Mt1yEqXGDTHJrsLmYXYABNm99fVn25FfmpUGHsIsi0xV7dJQw3K+tU+7GbTeCRemwvL2xz9/nI202D9QbT3XHIMovahTX6H2FGrWIyBbe/Z9j3HtrJHsupFMghb3zzwTwhEnEH5oxXVqgaeMsR4wfNFkfjHLUooFC30YY8UM//VOdWJkkuHtWRQI4w9cm/8WvkyABYyf8sYgcVpXqVYxVIuw/8uFVnbA8vW5d7Jpn80/JuZE/yh8uwE9Wb+qkN0+sr5VRIArs/ZGGvUsJG0/8fusPPBJ3p0tkVybl6kpv5RsHd+OSvDFj1S5KNj74cUO9/+cIj0OtRdeU749foSy8+BIkJYqKvZsdeg3mNqg0geAzplj5UGh8jTkLNZ70BO/PuEmhBj+gTLHykwdc0eCuUSNw=
