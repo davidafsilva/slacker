@@ -64,6 +64,9 @@ import static org.junit.Assert.assertTrue;
 @RunWith(VertxUnitRunner.class)
 public class HttpServerVerticleTest extends SlackerBaseTest {
 
+  // the server port
+  private static final int SERVER_PORT = 10001;
+
   // the post data for the tests
   private static final String POST_DATA = "timestamp=1355517523.000005&" +
       "team_id=xpto&" +
@@ -80,7 +83,7 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
     super.setup();
     assertTrue("unable to deploy server", deployVerticle(new HttpServerVerticle(),
         new DeploymentOptions().setConfig(new JsonObject()
-            .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), 10001)))
+            .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), SERVER_PORT)))
         .succeeded());
   }
 
@@ -204,7 +207,7 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
 
   private HttpClientRequest basicPost(final String uri,
       final Handler<HttpClientResponse> response) {
-    return vertx.createHttpClient().post(8080, "localhost", uri, response)
+    return vertx.createHttpClient().post(SERVER_PORT, "localhost", uri, response)
         .putHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded")
         .putHeader(HttpHeaders.ACCEPT, "application/json");
   }
