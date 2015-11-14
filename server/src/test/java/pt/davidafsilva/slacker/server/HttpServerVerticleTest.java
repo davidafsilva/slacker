@@ -46,6 +46,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import pt.davidafsilva.slacker.api.ResultCode;
 import pt.davidafsilva.slacker.api.SlackerBaseTest;
 import pt.davidafsilva.slacker.api.SlackerRequest;
+import pt.davidafsilva.slacker.api.SlackerRequestMessageCodec;
 import pt.davidafsilva.slacker.api.SlackerResponse;
 import pt.davidafsilva.slacker.api.SlackerResponseMessageCodec;
 
@@ -81,6 +82,13 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
   @Override
   public void setup() throws Exception {
     super.setup();
+
+    // register the codecs
+    vertx.eventBus()
+        .registerCodec(new SlackerRequestMessageCodec())
+        .registerCodec(new SlackerResponseMessageCodec());
+
+    // deploy the server
     assertTrue("unable to deploy server", deployVerticle(new HttpServerVerticle(),
         new DeploymentOptions().setConfig(new JsonObject()
             .put(HttpServerConfiguration.ConfigurationVariable.HTTP_PORT.name(), SERVER_PORT)))

@@ -44,7 +44,6 @@ import pt.davidafsilva.slacker.api.ResultCode;
 import pt.davidafsilva.slacker.api.SlackerRequest;
 import pt.davidafsilva.slacker.api.SlackerRequestMessageCodec;
 import pt.davidafsilva.slacker.api.SlackerResponse;
-import pt.davidafsilva.slacker.api.SlackerResponseMessageCodec;
 
 /**
  * The http server that shall receive the incoming requests from the slack web-hook and
@@ -95,11 +94,6 @@ final class HttpServerVerticle extends AbstractVerticle {
             startFuture.fail(deployedHandler.cause());
           }
         });
-
-    // register the codecs
-    vertx.eventBus()
-        .registerCodec(new SlackerRequestMessageCodec())
-        .registerCodec(new SlackerResponseMessageCodec());
   }
 
   @Override
