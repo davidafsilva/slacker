@@ -104,8 +104,10 @@ final class HttpContextSlackerRequestParser {
       builder.channelName(getPostValue(context, REQUEST_CHANNEL_NAME));
       builder.userId(getPostValue(context, REQUEST_USER_ID));
       builder.userName(getPostValue(context, REQUEST_USER_NAME));
-      builder.trigger(getPostValue(context, REQUEST_TRIGGER_WORD));
-      builder.text(getPostValue(context, REQUEST_TEXT));
+      final String[] split = splitCommandAndArguments(getPostValue(context, REQUEST_TRIGGER_WORD),
+          getPostValue(context, REQUEST_TEXT));
+      builder.command(split[0]);
+      builder.args(split[1]);
       optionalRequest = Optional.of(builder.build());
     } catch (final Exception e) {
       LOGGER.error("unable to parse request", e);
@@ -113,6 +115,17 @@ final class HttpContextSlackerRequestParser {
     }
 
     return optionalRequest;
+  }
+
+  /**
+   * Returns a split of the command and the respective arguments that were issued from the channel
+   *
+   * @param trigger the trigger of the message
+   * @param text    the complete text of the command
+   * @return the first position of array contains the command, the second is the argument
+   */
+  private static String[] splitCommandAndArguments(final String trigger, final String text) {
+    return text.replaceFirst(trigger, "").split("\\s", 2);
   }
 
   /**

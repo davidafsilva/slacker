@@ -65,7 +65,7 @@ public class HttpContextSlackerRequestParserTest {
   private static final String CHANNEL_NAME_VALUE = "#boo";
   private static final String USER_ID_VALUE = "1";
   private static final String USER_NAME_VALUE = "david";
-  private static final String TRIGGER_WORD_VALUE = "!boo";
+  private static final String TRIGGER_WORD_VALUE = "!";
   private static final String TEXT_VALUE = "!boo woop woop";
 
   @Parameterized.Parameters
@@ -137,7 +137,8 @@ public class HttpContextSlackerRequestParserTest {
    * @param context   the test run routing context
    * @param isPresent if the expected output has or not a request present
    */
-  public HttpContextSlackerRequestParserTest(final RoutingContext context, final boolean isPresent) {
+  public HttpContextSlackerRequestParserTest(final RoutingContext context,
+      final boolean isPresent) {
     this.context = context;
     this.isPresent = isPresent;
   }
@@ -165,8 +166,8 @@ public class HttpContextSlackerRequestParserTest {
       assertEquals(CHANNEL_NAME_VALUE, request.getChannelName());
       assertEquals(USER_ID_VALUE, request.getUserId());
       assertEquals(USER_NAME_VALUE, request.getUserName());
-      assertEquals(TRIGGER_WORD_VALUE, request.getTrigger());
-      assertEquals(TEXT_VALUE, request.getText());
+      assertEquals("boo", request.getCommand());
+      assertEquals("woop woop", request.getArguments());
     });
   }
 }
