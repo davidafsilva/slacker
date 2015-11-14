@@ -46,8 +46,8 @@ public final class SlackerRequestBuilder {
   private String channelName;
   private String userId;
   private String userName;
-  private String trigger;
-  private String text;
+  private String command;
+  private String args;
 
   public SlackerRequestBuilder timestamp(final Instant timestamp) {
     this.timestamp = timestamp;
@@ -84,13 +84,13 @@ public final class SlackerRequestBuilder {
     return this;
   }
 
-  public SlackerRequestBuilder trigger(final String trigger) {
-    this.trigger = trigger;
+  public SlackerRequestBuilder command(final String command) {
+    this.command = command;
     return this;
   }
 
-  public SlackerRequestBuilder text(final String text) {
-    this.text = text;
+  public SlackerRequestBuilder args(final String args) {
+    this.args = args;
     return this;
   }
 
@@ -110,8 +110,8 @@ public final class SlackerRequestBuilder {
         Objects.requireNonNull(channelName, "channel name"),
         Objects.requireNonNull(userId, "user identifier"),
         Objects.requireNonNull(userName, "user name"),
-        Objects.requireNonNull(trigger, "trigger"),
-        Objects.requireNonNull(text, "text"));
+        Objects.requireNonNull(command, "command"),
+        Objects.requireNonNull(args, "args"));
   }
 
   // straight-forward implementation of the slacker request
@@ -131,10 +131,10 @@ public final class SlackerRequestBuilder {
     private final String userId;
     // the user name
     private final String userName;
-    // the trigger
-    private final String trigger;
-    // the complete text (incl. trigger)
-    private final String text;
+    // the command
+    private final String command;
+    // the arguments
+    private final String args;
 
     /**
      * Default constructor
@@ -146,12 +146,12 @@ public final class SlackerRequestBuilder {
      * @param channelName    the channel name
      * @param userId         the user identifier
      * @param userName       the user name
-     * @param trigger        the trigger
-     * @param text           the complete text (incl. trigger)
+     * @param command        the command
+     * @param args           the arguments
      */
     private SlackerRequestImpl(final Instant timestamp, final String teamIdentifier,
         final String teamDomain, final String channelId, final String channelName,
-        final String userId, final String userName, final String trigger, final String text) {
+        final String userId, final String userName, final String command, final String args) {
       this.timestamp = timestamp;
       this.teamIdentifier = teamIdentifier;
       this.teamDomain = teamDomain;
@@ -159,8 +159,8 @@ public final class SlackerRequestBuilder {
       this.channelName = channelName;
       this.userId = userId;
       this.userName = userName;
-      this.trigger = trigger;
-      this.text = text;
+      this.command = command;
+      this.args = args;
     }
 
 
@@ -200,13 +200,13 @@ public final class SlackerRequestBuilder {
     }
 
     @Override
-    public String getTrigger() {
-      return trigger;
+    public String getCommand() {
+      return command;
     }
 
     @Override
-    public String getText() {
-      return text;
+    public String getArguments() {
+      return args;
     }
 
     @Override

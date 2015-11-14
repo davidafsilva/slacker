@@ -61,10 +61,10 @@ public final class SlackerRequestMessageCodec
     writeString(buffer, request.getUserId());
     // user name
     writeString(buffer, request.getUserName());
-    // trigger
-    writeString(buffer, request.getTrigger());
-    // text message
-    writeString(buffer, request.getText());
+    // command
+    writeString(buffer, request.getCommand());
+    // arguments
+    writeString(buffer, request.getArguments());
   }
 
   /**
@@ -96,9 +96,9 @@ public final class SlackerRequestMessageCodec
     // user name
     offset = readString(buffer, offset, builder::userName);
     // trigger
-    offset = readString(buffer, offset, builder::trigger);
+    offset = readString(buffer, offset, builder::command);
     // text message
-    readString(buffer, offset, builder::text);
+    readString(buffer, offset, builder::args);
 
     return builder.build();
   }

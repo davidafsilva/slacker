@@ -65,8 +65,8 @@ public class AbstractSlackerExecutorTest extends SlackerBaseTest {
       .userName("david")
       .teamDomain("slack.davidafsilva.pt")
       .teamIdentifier("davidafsilva")
-      .trigger("!")
-      .text("!test")
+      .command("test")
+      .args("123 456")
       .build();
 
   // the responses used for the test

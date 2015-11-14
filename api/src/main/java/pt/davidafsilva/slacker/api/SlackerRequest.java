@@ -86,16 +86,17 @@ public interface SlackerRequest {
   String getUserName();
 
   /**
-   * Returns the configured trigger that originated this request
+   * Returns the command that was issued from the channel
    *
-   * @return the trigger command
+   * @return the issued command
    */
-  String getTrigger();
+  String getCommand();
 
   /**
-   * Returns the full text message
+   * Returns the arguments for the command. This is essentially the full-text message without the
+   * trigger and command bits.
    *
-   * @return the full text message
+   * @return the command arguments
    */
-  String getText();
+  String getArguments();
 }

@@ -50,7 +50,6 @@ public class SlackerRequestMessageCodecTest {
     assertEquals(-1, codec.systemCodecID());
   }
 
-
   @Test
   public void test_transform() {
     final SlackerRequestMessageCodec codec = new SlackerRequestMessageCodec();
@@ -70,8 +69,8 @@ public class SlackerRequestMessageCodecTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
 
     // encode
@@ -84,8 +83,8 @@ public class SlackerRequestMessageCodecTest {
             + 4 + 5 // user name
             + 4 + 21 // team domain
             + 4 + 12 // team id
-            + 4 + 1 // trigger
-            + 4 + 5 // text
+            + 4 + 4 // command
+            + 4 + 7 // args
         , buffer.length());
 
     // decode
@@ -98,7 +97,7 @@ public class SlackerRequestMessageCodecTest {
     assertEquals(request.getUserName(), decoded.getUserName());
     assertEquals(request.getTeamDomain(), decoded.getTeamDomain());
     assertEquals(request.getTeamIdentifier(), decoded.getTeamIdentifier());
-    assertEquals(request.getTrigger(), decoded.getTrigger());
-    assertEquals(request.getText(), decoded.getText());
+    assertEquals(request.getCommand(), decoded.getCommand());
+    assertEquals(request.getArguments(), decoded.getArguments());
   }
 }

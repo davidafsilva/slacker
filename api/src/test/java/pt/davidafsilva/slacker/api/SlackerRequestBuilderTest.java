@@ -57,8 +57,8 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
   }
 
@@ -74,8 +74,8 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
   }
 
@@ -91,8 +91,8 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
   }
 
@@ -108,8 +108,8 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
   }
 
@@ -125,8 +125,8 @@ public class SlackerRequestBuilderTest {
         //.userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
   }
 
@@ -142,8 +142,8 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         //.teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
   }
 
@@ -159,15 +159,15 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         //.teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
   }
 
   @Test
-  public void test_invalidTrigger() {
+  public void test_invalidCommand() {
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("trigger");
+    thrown.expectMessage("command");
     new SlackerRequestBuilder()
         .timestamp(Instant.now())
         .channelId("12345")
@@ -176,15 +176,15 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        //.trigger("!")
-        .text("!test")
+        //.command("test")
+        .args("123 456")
         .build();
   }
 
   @Test
   public void test_invalidTextMessage() {
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("text");
+    thrown.expectMessage("args");
     new SlackerRequestBuilder()
         .timestamp(Instant.now())
         .channelId("12345")
@@ -193,8 +193,8 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        //.text("!test")
+        .command("test")
+        //.args("123 456")
         .build();
   }
 
@@ -209,8 +209,8 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .trigger("!")
-        .text("!test")
+        .command("test")
+        .args("123 456")
         .build();
     assertNotNull(request);
     assertEquals(now, request.getTimestamp());
@@ -220,8 +220,8 @@ public class SlackerRequestBuilderTest {
     assertEquals("david", request.getUserName());
     assertEquals("slack.davidafsilva.pt", request.getTeamDomain());
     assertEquals("davidafsilva", request.getTeamIdentifier());
-    assertEquals("!", request.getTrigger());
-    assertEquals("!test", request.getText());
+    assertEquals("test", request.getCommand());
+    assertEquals("123 456", request.getArguments());
     assertNotNull(request.toString());
   }
 }
