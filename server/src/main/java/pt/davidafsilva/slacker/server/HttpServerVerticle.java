@@ -52,7 +52,7 @@ import pt.davidafsilva.slacker.api.SlackerResponseMessageCodec;
  *
  * @author david
  */
-public final class HttpServerVerticle extends AbstractVerticle {
+final class HttpServerVerticle extends AbstractVerticle {
 
   // the logger
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
