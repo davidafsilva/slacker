@@ -117,6 +117,7 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
     // test valid URI and headers - invalid request
     wrapExec(latch -> basicPost("/command", res -> {
       assertEquals(400, res.statusCode());
+      validateResponseHeaders(res);
       latch.countDown();
     }).end("{}"));
   }
@@ -126,6 +127,7 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
     assertTrue(deployVerticle(new DummyEventListener(m -> m.fail(1, "oops"))).succeeded());
     wrapExec(latch -> basicPost("/command", res -> {
       assertEquals(500, res.statusCode());
+      validateResponseHeaders(res);
       res.bodyHandler(b -> {
         assertEquals("{\"text\":\"<@U6789|david>: something funky happened..\"}", b.toString());
         latch.countDown();
@@ -135,21 +137,19 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
 
   @Test
   public void test_nullResponse() {
-    assertTrue(deployVerticle(new DummyEventListener(m -> m.reply(null))).succeeded());
-    wrapExec(latch -> basicPost("/command", res -> {
-      assertEquals(500, res.statusCode());
-      res.bodyHandler(b -> {
-        assertEquals(0, b.length());
-        latch.countDown();
-      });
-    }).end(POST_DATA));
+    testWithInvalidResponse(null);
   }
 
   @Test
   public void test_invalidResponseType() {
-    assertTrue(deployVerticle(new DummyEventListener(m -> m.reply("xpto"))).succeeded());
+    testWithInvalidResponse("xpto");
+  }
+
+  private void testWithInvalidResponse(final String reply) {
+    assertTrue(deployVerticle(new DummyEventListener(m -> m.reply(reply))).succeeded());
     wrapExec(latch -> basicPost("/command", res -> {
       assertEquals(500, res.statusCode());
+      validateResponseHeaders(res);
       res.bodyHandler(b -> {
         assertEquals(0, b.length());
         latch.countDown();
@@ -174,6 +174,7 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
         new DeliveryOptions().setCodecName(SlackerResponseMessageCodec.NAME)))).succeeded());
     wrapExec(latch -> basicPost("/command", res -> {
       assertEquals(200, res.statusCode());
+      validateResponseHeaders(res);
       res.bodyHandler(b -> {
         assertEquals(0, b.length());
         latch.countDown();
@@ -198,11 +199,18 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
         new DeliveryOptions().setCodecName(SlackerResponseMessageCodec.NAME)))).succeeded());
     wrapExec(latch -> basicPost("/command", res -> {
       assertEquals(400, res.statusCode());
+      validateResponseHeaders(res);
       res.bodyHandler(b -> {
         assertEquals("{\"text\":\"some reason\"}", b.toString());
         latch.countDown();
       });
     }).end(POST_DATA));
+  }
+
+  private void validateResponseHeaders(final HttpClientResponse response) {
+    final String cacheHeader = response.getHeader("Cache-Control");
+    assertNotNull(cacheHeader);
+    assertEquals("no-store, no-cache", cacheHeader);
   }
 
   private HttpClientRequest basicPost(final String uri,

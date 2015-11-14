@@ -166,6 +166,7 @@ public final class HttpServerVerticle extends AbstractVerticle {
         .orElse(EMPTY_BUF);
     context.response()
         .setStatusCode(code.getHttpStatus().code())
+        .putHeader("Cache-Control", "no-store, no-cache")
         .end(message);
   }
 }
