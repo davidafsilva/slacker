@@ -42,8 +42,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.KeyCertOptions;
 
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -127,6 +129,10 @@ public class HttpServerConfigurationTest {
     assertNotNull(options);
     assertEquals(8443, options.getPort());
     assertEquals(true, options.isSsl());
+    assertEquals(HttpServerConfiguration.CIPHER_SUITES.size(),
+        options.getEnabledCipherSuites().size());
+    assertThat(options.getEnabledCipherSuites(), hasItems(HttpServerConfiguration.CIPHER_SUITES
+        .toArray(new String[HttpServerConfiguration.CIPHER_SUITES.size()])));
     final KeyCertOptions keyCertOptions = options.getKeyCertOptions();
     assertNotNull(keyCertOptions);
     assertTrue(JksOptions.class.isInstance(keyCertOptions));

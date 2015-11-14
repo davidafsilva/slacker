@@ -27,6 +27,8 @@ package pt.davidafsilva.slacker.server;
  */
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -78,6 +80,16 @@ final class HttpServerConfiguration {
   // the default value for the use SSL flag
   static final boolean DEFAULT_USE_SSL = false;
 
+  // the cipher suites to enable for SSL
+  static final Collection<String> CIPHER_SUITES = Collections.unmodifiableList(Arrays.asList(
+      "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+      "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_RSA_WITH_AES_128_CBC_SHA"
+  ));
+
   // invalid configuration message
   static final String MISSING_PROPERTIES = "some required properties are missing: %s";
 
@@ -107,6 +119,9 @@ final class HttpServerConfiguration {
       // validate the configuration
       validateOptions(config, ConfigurationVariable.KEY_STORE_FILE,
           ConfigurationVariable.KEY_STORE_PASS);
+
+      // add the enabled cipher suites
+      CIPHER_SUITES.stream().forEach(options::addEnabledCipherSuite);
 
       // set the both keystore location and keystore password
       options.setKeyStoreOptions(new JksOptions()
