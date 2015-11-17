@@ -104,7 +104,7 @@ final class EventServerVerticle extends AbstractVerticle {
     // try to register the executor
     final JsonObject executorRequest = (JsonObject) message.body();
     executorRegistry.register(executorRequest,
-        address -> message.reply(new JsonObject().put("r", "OK").put("a", address)),
+        address -> message.reply(new JsonObject().put("a", address)),
         reason -> message.fail(1, String.format("unable to register executor: %s", reason)));
   }
 

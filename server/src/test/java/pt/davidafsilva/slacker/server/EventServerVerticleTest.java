@@ -120,8 +120,6 @@ public class EventServerVerticleTest extends SlackerBaseTest {
           assertNotNull(reply.result().body());
           assertThat(reply.result().body(), instanceOf(JsonObject.class));
           final JsonObject json = (JsonObject) reply.result().body();
-          assertTrue(json.containsKey("r"));
-          assertEquals("OK", json.getString("r"));
           assertTrue(json.containsKey("a"));
           assertEquals(32 + 17, json.getString("a").length());
           latch.countDown();

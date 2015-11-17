@@ -29,6 +29,7 @@ package pt.davidafsilva.slacker.api;
 import io.vertx.core.AsyncResultHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Verticle;
+import io.vertx.core.eventbus.ReplyException;
 
 /**
  * <p>
@@ -60,8 +61,7 @@ import io.vertx.core.Verticle;
  *      }
  * SE &lt;---- [ HELLO RSP } &lt;---- SS
  *      {
- *        "s": &lt;true|false&gt;,
- *        "m": &lt;message&gt;
+ *        "a": &lt;address&gt;
  *      }
  * </pre>
  * <p>
@@ -70,8 +70,11 @@ import io.vertx.core.Verticle;
  * Finally, the version is used to ensure that only instances with the same or newer (in-service
  * upgrade) version are enabled.
  *
- * The HELLO RSP message contains the response status along with a response message, e.g. used to
- * include the failure reason.
+ * The HELLO RSP message contains the generated address that must be used to bind at consume events
+ * from the event bus.
+ *
+ * In case of a failure, the message is generated from the underlying vertx failure protocol via
+ * the serialization/deserialization of {@link ReplyException}.
  * </p>
  *
  * @author david
