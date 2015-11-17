@@ -36,6 +36,7 @@ import io.vertx.core.json.Json;
  * A builder for a fluent creation of {@link SlackerRequest} messages.
  *
  * @author david
+ * @since 1.0
  */
 public final class SlackerRequestBuilder {
 

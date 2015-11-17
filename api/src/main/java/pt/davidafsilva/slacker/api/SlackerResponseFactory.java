@@ -33,6 +33,7 @@ import java.util.Optional;
  * A simple factory for the creation of {@link SlackerResponse} messages.
  *
  * @author david
+ * @since 1.0
  */
 final class SlackerResponseFactory {
 

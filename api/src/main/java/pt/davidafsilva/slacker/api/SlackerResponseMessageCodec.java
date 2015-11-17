@@ -37,6 +37,7 @@ import io.vertx.core.eventbus.MessageCodec;
  * This is required to sent this message types across the vertx event-bus.
  *
  * @author david
+ * @since 1.0
  */
 public final class SlackerResponseMessageCodec
     implements MessageCodec<SlackerResponse, SlackerResponse> {
