@@ -64,7 +64,7 @@ public final class SlackerRequestMessageCodec
     // command
     writeString(buffer, request.getCommand());
     // arguments
-    writeString(buffer, request.getArguments());
+    writeString(buffer, request.getArguments().orElse(""));
   }
 
   /**
@@ -114,7 +114,7 @@ public final class SlackerRequestMessageCodec
   private int readString(final Buffer buffer, int offset, final Consumer<String> consumer) {
     final int length = buffer.getInt(offset);
     final int end = offset + 4 + length;
-    final String str = buffer.getString(offset + 4, end);
+    final String str = length == 0 ? "" : buffer.getString(offset + 4, end);
     consumer.accept(str);
     return end;
   }

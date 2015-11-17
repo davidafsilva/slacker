@@ -27,6 +27,7 @@ package pt.davidafsilva.slacker.api;
  */
 
 import java.time.Instant;
+import java.util.Optional;
 
 /**
  * The request information for the (remote) slacker command execution.
@@ -93,10 +94,10 @@ public interface SlackerRequest {
   String getCommand();
 
   /**
-   * Returns the arguments for the command. This is essentially the full-text message without the
-   * trigger and command bits.
+   * Returns the arguments for the command if any is available.
+   * This is essentially the full-text message without the trigger and command bits.
    *
    * @return the command arguments
    */
-  String getArguments();
+  Optional<String> getArguments();
 }

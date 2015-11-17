@@ -28,6 +28,7 @@ package pt.davidafsilva.slacker.api;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 import io.vertx.core.json.Json;
 
@@ -111,7 +112,7 @@ public final class SlackerRequestBuilder {
         Objects.requireNonNull(userId, "user identifier"),
         Objects.requireNonNull(userName, "user name"),
         Objects.requireNonNull(command, "command"),
-        Objects.requireNonNull(args, "args"));
+        args == null || args.isEmpty() ? null : args);
   }
 
   // straight-forward implementation of the slacker request
@@ -134,7 +135,7 @@ public final class SlackerRequestBuilder {
     // the command
     private final String command;
     // the arguments
-    private final String args;
+    private final Optional<String> args;
 
     /**
      * Default constructor
@@ -160,7 +161,7 @@ public final class SlackerRequestBuilder {
       this.userId = userId;
       this.userName = userName;
       this.command = command;
-      this.args = args;
+      this.args = Optional.ofNullable(args);
     }
 
 
@@ -205,7 +206,7 @@ public final class SlackerRequestBuilder {
     }
 
     @Override
-    public String getArguments() {
+    public Optional<String> getArguments() {
       return args;
     }
 

@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -182,26 +183,19 @@ public class SlackerRequestBuilderTest {
   }
 
   @Test
-  public void test_invalidTextMessage() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("args");
-    new SlackerRequestBuilder()
-        .timestamp(Instant.now())
-        .channelId("12345")
-        .channelName("#dope")
-        .userId("6789")
-        .userName("david")
-        .teamDomain("slack.davidafsilva.pt")
-        .teamIdentifier("davidafsilva")
-        .command("test")
-        //.args("123 456")
-        .build();
+  public void test_success() {
+    testWithArgs(Optional.of("123, 456"));
   }
 
   @Test
-  public void test_success() {
+  public void test_success_noArgs() {
+    testWithArgs(Optional.of(""));
+    testWithArgs(Optional.empty());
+  }
+
+  private void testWithArgs(final Optional<String> args) {
     final Instant now = Instant.now();
-    final SlackerRequest request = new SlackerRequestBuilder()
+    final SlackerRequestBuilder builder = new SlackerRequestBuilder()
         .timestamp(now)
         .channelId("12345")
         .channelName("#dope")
@@ -209,9 +203,9 @@ public class SlackerRequestBuilderTest {
         .userName("david")
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
-        .command("test")
-        .args("123 456")
-        .build();
+        .command("test");
+    args.ifPresent(builder::args);
+    final SlackerRequest request = builder.build();
     assertNotNull(request);
     assertEquals(now, request.getTimestamp());
     assertEquals("12345", request.getChannelId());
@@ -221,7 +215,8 @@ public class SlackerRequestBuilderTest {
     assertEquals("slack.davidafsilva.pt", request.getTeamDomain());
     assertEquals("davidafsilva", request.getTeamIdentifier());
     assertEquals("test", request.getCommand());
-    assertEquals("123 456", request.getArguments());
+    assertEquals(args.filter(s -> !s.isEmpty()).isPresent(), request.getArguments().isPresent());
+    request.getArguments().ifPresent(a -> assertEquals(args.get(), a));
     assertNotNull(request.toString());
   }
 }

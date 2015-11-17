@@ -88,7 +88,8 @@ final class HttpServerVerticle extends AbstractVerticle {
         .requestHandler(router::accept)
         .listen(deployedHandler -> {
           if (deployedHandler.succeeded()) {
-            LOGGER.info(String.format("slacker-server listening at port %s", options.getPort()));
+            LOGGER.info(String.format("slacker http server listening at port %d",
+                options.getPort()));
             startFuture.complete();
           } else {
             startFuture.fail(deployedHandler.cause());
@@ -97,9 +98,12 @@ final class HttpServerVerticle extends AbstractVerticle {
   }
 
   @Override
-  public void stop() throws Exception {
-    LOGGER.info("closing slacker-server..");
-    httpServer.close();
+  public void stop(final Future<Void> stopFuture) throws Exception {
+    LOGGER.info("closing slacker http server..");
+    httpServer.close(r -> {
+      LOGGER.info("slacker http server closed: {} (cause: {})", r.succeeded(), r.cause());
+      stopFuture.complete();
+    });
   }
 
   /**
@@ -116,7 +120,7 @@ final class HttpServerVerticle extends AbstractVerticle {
     // dispatch the request to the slacker server
     if (slackRequest.isPresent()) {
       final SlackerRequest r = slackRequest.get();
-      vertx.eventBus().send("slacker-server", r, new DeliveryOptions()
+      vertx.eventBus().send(EventServerVerticle.REQ_SERVER_ADDRESS, r, new DeliveryOptions()
           .setCodecName(SlackerRequestMessageCodec.NAME), reply -> {
         LOGGER.info("received reply from slacker-server for request");
         LOGGER.debug(reply);
@@ -133,8 +137,8 @@ final class HttpServerVerticle extends AbstractVerticle {
             endRequest(context, ResultCode.ERROR, Optional.empty());
           }
         } else {
-          final String error = String.format(ERROR_RESPONSE_FORMAT, r.getUserId(), r.getUserName());
-          endRequest(context, ResultCode.ERROR, Optional.of(error));
+          LOGGER.error("unable to process request", reply.cause());
+          endRequest(context, ResultCode.ERROR, Optional.empty());
         }
       });
     } else {

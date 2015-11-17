@@ -107,7 +107,7 @@ final class HttpContextSlackerRequestParser {
       final String[] split = splitCommandAndArguments(getPostValue(context, REQUEST_TRIGGER_WORD),
           getPostValue(context, REQUEST_TEXT));
       builder.command(split[0]);
-      builder.args(split[1]);
+      builder.args(split.length > 1 ? split[1] : null);
       optionalRequest = Optional.of(builder.build());
     } catch (final Exception e) {
       LOGGER.error("unable to parse request", e);

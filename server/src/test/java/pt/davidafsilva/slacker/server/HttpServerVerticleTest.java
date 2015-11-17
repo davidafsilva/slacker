@@ -77,7 +77,7 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
       "user_id=U6789&" +
       "user_name=david&" +
       "trigger_word=!&" +
-      "text=blabla";
+      "text=!blabla";
 
   @Override
   public void setup() throws Exception {
@@ -136,10 +136,7 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
     wrapExec(latch -> basicPost("/command", res -> {
       assertEquals(500, res.statusCode());
       validateResponseHeaders(res);
-      res.bodyHandler(b -> {
-        assertEquals("{\"text\":\"<@U6789|david>: something funky happened..\"}", b.toString());
-        latch.countDown();
-      });
+      latch.countDown();
     }).end(POST_DATA));
   }
 
@@ -239,8 +236,8 @@ public class HttpServerVerticleTest extends SlackerBaseTest {
 
     @Override
     public void start() throws Exception {
-      vertx.eventBus()
-          .consumer("slacker-server", (Handler<Message<SlackerRequest>>) message -> {
+      vertx.eventBus().consumer(EventServerVerticle.REQ_SERVER_ADDRESS,
+          (Handler<Message<SlackerRequest>>) message -> {
             assertNotNull(message);
             assertThat(message.body(), instanceOf(SlackerRequest.class));
             consumer.accept(message);

@@ -58,7 +58,21 @@ public class SlackerRequestMessageCodecTest {
   }
 
   @Test
-  public void test_encodeDecode() {
+  public void test_encodeDecode_withArgs() {
+    encodeDecode("123 456");
+  }
+
+  @Test
+  public void test_encodeDecode_emptyArgs() {
+    encodeDecode("");
+  }
+
+  @Test
+  public void test_encodeDecode_nullArgs() {
+    encodeDecode(null);
+  }
+
+  private void encodeDecode(final String args) {
     final SlackerRequestMessageCodec codec = new SlackerRequestMessageCodec();
     final Instant now = Instant.now();
     final SlackerRequest request = new SlackerRequestBuilder()
@@ -70,7 +84,7 @@ public class SlackerRequestMessageCodecTest {
         .teamDomain("slack.davidafsilva.pt")
         .teamIdentifier("davidafsilva")
         .command("test")
-        .args("123 456")
+        .args(args)
         .build();
 
     // encode
@@ -84,7 +98,7 @@ public class SlackerRequestMessageCodecTest {
             + 4 + 21 // team domain
             + 4 + 12 // team id
             + 4 + 4 // command
-            + 4 + 7 // args
+            + 4 + (args == null ? 0 : args.length()) // args
         , buffer.length());
 
     // decode
@@ -98,6 +112,7 @@ public class SlackerRequestMessageCodecTest {
     assertEquals(request.getTeamDomain(), decoded.getTeamDomain());
     assertEquals(request.getTeamIdentifier(), decoded.getTeamIdentifier());
     assertEquals(request.getCommand(), decoded.getCommand());
-    assertEquals(request.getArguments(), decoded.getArguments());
+    assertEquals(request.getArguments().isPresent(), decoded.getArguments().isPresent());
+    request.getArguments().ifPresent(a -> assertEquals(a, decoded.getArguments().get()));
   }
 }

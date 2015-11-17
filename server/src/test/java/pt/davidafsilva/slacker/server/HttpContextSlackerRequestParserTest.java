@@ -44,6 +44,8 @@ import io.vertx.ext.web.RoutingContext;
 import pt.davidafsilva.slacker.api.SlackerRequest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,20 +69,30 @@ public class HttpContextSlackerRequestParserTest {
   private static final String USER_NAME_VALUE = "david";
   private static final String TRIGGER_WORD_VALUE = "!";
   private static final String TEXT_VALUE = "!boo woop woop";
+  private static final String EXPECTED_ARGS = "woop woop";
 
   @Parameterized.Parameters
   public static Iterable<Object[]> testDataSupplier() {
     return Arrays.asList(new Object[][]{
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TIMESTAMP)), false},
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEAM_ID)), false},
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEAM_DOMAIN)), false},
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_CHANNEL_ID)), false},
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_CHANNEL_NAME)), false},
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_USER_ID)), false},
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_USER_NAME)), false},
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TRIGGER_WORD)), false},
-            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEXT)), false},
-            {create(Optional.empty()), true},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TIMESTAMP)), false,
+                EXPECTED_ARGS},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEAM_ID)), false,
+                EXPECTED_ARGS},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEAM_DOMAIN)), false,
+                EXPECTED_ARGS},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_CHANNEL_ID)), false,
+                EXPECTED_ARGS},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_CHANNEL_NAME)), false,
+                EXPECTED_ARGS},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_USER_ID)), false,
+                EXPECTED_ARGS},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_USER_NAME)), false,
+                EXPECTED_ARGS},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TRIGGER_WORD)), false,
+                EXPECTED_ARGS},
+            {create(Optional.of(HttpContextSlackerRequestParser.REQUEST_TEXT)), false, EXPECTED_ARGS},
+            {create(Optional.empty()), true, EXPECTED_ARGS},
+            {create(Optional.empty(), "!boo"), true, null},
         }
     );
   }
@@ -92,18 +104,37 @@ public class HttpContextSlackerRequestParserTest {
    * @return the test routing context
    */
   private static RoutingContext create(final Optional<String> excluded) {
+    return create(excluded, TEXT_VALUE);
+  }
+
+  /**
+   * Creates the base routing context for the test execution with all of the attributes filled
+   *
+   * @param excluded the excluded request attribute, if any
+   * @param text     the text value to be included
+   * @return the test routing context
+   */
+  private static RoutingContext create(final Optional<String> excluded, final String text) {
     final RoutingContext context = mock(RoutingContext.class);
     final HttpServerRequest request = mock(HttpServerRequest.class);
     final MultiMap attributes = mock(MultiMap.class);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TIMESTAMP, TIMESTAMP_VALUE, excluded);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEAM_ID, TEAM_ID_VALUE, excluded);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEAM_DOMAIN, TEAM_DOMAIN_VALUE, excluded);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_CHANNEL_ID, CHANNEL_ID_VALUE, excluded);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_CHANNEL_NAME, CHANNEL_NAME_VALUE, excluded);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_USER_ID, USER_ID_VALUE, excluded);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_USER_NAME, USER_NAME_VALUE, excluded);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TRIGGER_WORD, TRIGGER_WORD_VALUE, excluded);
-    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEXT, TEXT_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TIMESTAMP, TIMESTAMP_VALUE,
+        excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEAM_ID, TEAM_ID_VALUE,
+        excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEAM_DOMAIN, TEAM_DOMAIN_VALUE,
+        excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_CHANNEL_ID, CHANNEL_ID_VALUE,
+        excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_CHANNEL_NAME,
+        CHANNEL_NAME_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_USER_ID, USER_ID_VALUE,
+        excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_USER_NAME, USER_NAME_VALUE,
+        excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TRIGGER_WORD,
+        TRIGGER_WORD_VALUE, excluded);
+    addAttribute(attributes, HttpContextSlackerRequestParser.REQUEST_TEXT, text, excluded);
     when(request.formAttributes()).thenReturn(attributes);
     when(context.request()).thenReturn(request);
     return context;
@@ -128,20 +159,14 @@ public class HttpContextSlackerRequestParserTest {
   public ExpectedException thrown = ExpectedException.none();
 
   // test run parameters
-  private final RoutingContext context;
-  private final boolean isPresent;
+  @Parameterized.Parameter(0)
+  public RoutingContext context;
 
-  /**
-   * Default test class constructor
-   *
-   * @param context   the test run routing context
-   * @param isPresent if the expected output has or not a request present
-   */
-  public HttpContextSlackerRequestParserTest(final RoutingContext context,
-      final boolean isPresent) {
-    this.context = context;
-    this.isPresent = isPresent;
-  }
+  @Parameterized.Parameter(1)
+  public boolean isPresent;
+
+  @Parameterized.Parameter(2)
+  public String expectedArgs;
 
   @Test
   public void test_constructor() throws Exception {
@@ -167,7 +192,12 @@ public class HttpContextSlackerRequestParserTest {
       assertEquals(USER_ID_VALUE, request.getUserId());
       assertEquals(USER_NAME_VALUE, request.getUserName());
       assertEquals("boo", request.getCommand());
-      assertEquals("woop woop", request.getArguments());
+      if (expectedArgs != null) {
+        assertTrue(request.getArguments().isPresent());
+        assertEquals(expectedArgs, request.getArguments().get());
+      } else {
+        assertFalse(request.getArguments().isPresent());
+      }
     });
   }
 }
