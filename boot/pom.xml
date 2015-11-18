@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>slacker-bootstrap</artifactId>
+    <artifactId>slacker-boot</artifactId>
 
     <!-- project dependencies -->
     <dependencies>
@@ -44,7 +44,7 @@
                         </manifest>
                         <manifestEntries>
                             <Main-Verticle>
-                                pt.davidafsilva.slacker.server.HttpServerVerticle
+                                pt.davidafsilva.slacker.server.SlackerServer
                             </Main-Verticle>
                         </manifestEntries>
                     </archive>
@@ -67,9 +67,6 @@
                         <configuration>
                             <includeScope>runtime</includeScope>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
                             <useBaseVersion>false</useBaseVersion>
                         </configuration>
                     </execution>
