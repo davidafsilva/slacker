@@ -72,6 +72,7 @@ public class HttpServerConfigurationTest {
     assertNotNull(options);
     assertEquals(HttpServerConfiguration.DEFAULT_HTTP_PORT, options.getPort());
     assertEquals(HttpServerConfiguration.DEFAULT_USE_SSL, options.isSsl());
+    assertEquals(HttpServerConfiguration.IDLE_TIMEOUT, options.getIdleTimeout());
   }
 
   @Test

@@ -79,6 +79,8 @@ final class HttpServerConfiguration {
   static final int DEFAULT_HTTP_PORT = 8080;
   // the default value for the use SSL flag
   static final boolean DEFAULT_USE_SSL = false;
+  // the idle timeout for the connection (in seconds)
+  static final int IDLE_TIMEOUT = 60;
 
   // the cipher suites to enable for SSL
   static final Collection<String> CIPHER_SUITES = Collections.unmodifiableList(Arrays.asList(
@@ -111,6 +113,7 @@ final class HttpServerConfiguration {
 
     // create the http server options
     final HttpServerOptions options = new HttpServerOptions()
+        .setIdleTimeout(IDLE_TIMEOUT)
         .setPort(config.getInteger(ConfigurationVariable.HTTP_PORT.name(), DEFAULT_HTTP_PORT))
         .setSsl(config.getBoolean(ConfigurationVariable.USE_SSL.name(), DEFAULT_USE_SSL));
 
