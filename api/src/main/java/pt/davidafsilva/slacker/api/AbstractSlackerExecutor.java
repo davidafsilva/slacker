@@ -105,16 +105,21 @@ public abstract class AbstractSlackerExecutor implements SlackerExecutor {
         .put("d", description())
         .put("v", version());
     vertx.eventBus().send("slacker-server", helloMessage, result -> {
-      if (result.succeeded()) {
-        // everything went smoothly - register the listener and complete the startup
-        registerListener();
-        LOGGER.info("successfully registered '{}' executor", identifier());
-        startFuture.complete();
+      if (result.succeeded() && JsonObject.class.isInstance(result.result().body())) {
+        final JsonObject response = (JsonObject) result.result().body();
+        if (response.containsKey("a")) {
+          // everything went smoothly - register the listener and complete the startup
+          registerListener(response.getString("a"));
+          LOGGER.info("successfully registered '{}' executor", identifier());
+          startFuture.complete();
+        } else {
+          failStart(startFuture, "no address to bind was received");
+        }
       } else {
         // something unexpected happened
         failStart(startFuture, Optional.ofNullable(result.cause())
             .map(Throwable::getMessage)
-            .orElse("unknown"));
+            .orElse("invalid response"));
       }
     });
   }
@@ -125,10 +130,11 @@ public abstract class AbstractSlackerExecutor implements SlackerExecutor {
    *
    * Note that this method should only be called when the executor has been successfully registered
    * at the slacker-server.
+   *
+   * @param address the address assigned by slacker-server
    */
-  protected void registerListener() {
-    consumer = Optional.of(vertx.eventBus().consumer("slacker-" + identifier(),
-        this::handleExecutorEvent));
+  protected void registerListener(final String address) {
+    consumer = Optional.of(vertx.eventBus().consumer(address, this::handleExecutorEvent));
   }
 
   /**

@@ -117,15 +117,34 @@ public class AbstractSlackerExecutorTest extends SlackerBaseTest {
   }
 
   @Test
-  public void test_failDeploy() throws InterruptedException {
+  public void test_failedDeploy_fail() throws InterruptedException {
     deployServer(r -> r.fail(0, "dummy reason"));
-    assertFalse("deployed executor when wasn't expected",
-        deployVerticle(new TestSlackerExecutor(Future::complete)).succeeded());
+    final AsyncResult<String> result = deployVerticle(new TestSlackerExecutor(Future::complete));
+    assertTrue("deployed executor when wasn't expected", result.failed());
+    assertEquals("unable to register 'test' executor: dummy reason", result.cause().getMessage());
+  }
+
+  @Test
+  public void test_failedDeploy_invalidResponseReceived() throws InterruptedException {
+    deployServer(r -> r.reply("oops"));
+    final AsyncResult<String> result = deployVerticle(new TestSlackerExecutor(Future::complete));
+    assertTrue("deployed executor when wasn't expected", result.failed());
+    assertEquals("unable to register 'test' executor: invalid response",
+        result.cause().getMessage());
+  }
+
+  @Test
+  public void test_failedDeploy_noAddress() throws InterruptedException {
+    deployServer(r -> r.reply(new JsonObject().put("invalid", "oops")));
+    final AsyncResult<String> result = deployVerticle(new TestSlackerExecutor(Future::complete));
+    assertTrue("deployed executor when wasn't expected", result.failed());
+    assertEquals("unable to register 'test' executor: no address to bind was received",
+        result.cause().getMessage());
   }
 
   @Test
   public void test_successDeploy_duplicateCodecRegistry() throws InterruptedException {
-    deployServer(r -> r.reply(new JsonObject().put("s", true)));
+    deployServer(r -> r.reply(new JsonObject().put("a", "amazing-address.slacker-server")));
 
     // deploy first executor
     assertTrue("unable to deploy first executor",
@@ -137,14 +156,15 @@ public class AbstractSlackerExecutorTest extends SlackerBaseTest {
 
   @Test
   public void test_successDeploy_failResponse() throws InterruptedException {
-    deployServer(r -> r.reply(new JsonObject().put("s", true)));
+    deployServer(r -> r.reply(new JsonObject().put("a", "amazing-address")));
 
     // deploy executor
     assertTrue("unable to deploy executor",
         deployVerticle(new TestSlackerExecutor(f -> f.fail("test-fail"))).succeeded());
 
     // test sending message with a fail response
-    final AsyncResult<Message<Object>> reply = sendRequest("slacker-test", REQUEST);
+    final AsyncResult<Message<Object>> reply = sendRequest("amazing-address",
+        REQUEST);
     assertFalse(reply.succeeded());
     assertEquals("test-fail", reply.cause().getMessage());
   }
@@ -171,7 +191,7 @@ public class AbstractSlackerExecutorTest extends SlackerBaseTest {
 
   private void executeDeployWithMessage(final SlackerResponse response)
       throws InterruptedException {
-    deployServer(r -> r.reply(new JsonObject().put("s", true)));
+    deployServer(r -> r.reply(new JsonObject().put("a", "amazing-address")));
 
     // deploy executor
     final AbstractSlackerExecutor executor = new TestSlackerExecutor(f -> f.complete(response));
@@ -179,7 +199,7 @@ public class AbstractSlackerExecutorTest extends SlackerBaseTest {
     assertNotNull(executor.getVertx());
 
     // test sending message
-    final AsyncResult<Message<Object>> reply = sendRequest("slacker-test", REQUEST);
+    final AsyncResult<Message<Object>> reply = sendRequest("amazing-address", REQUEST);
     assertTrue(reply.succeeded());
     final Message<Object> result = reply.result();
     assertNotNull(result);
