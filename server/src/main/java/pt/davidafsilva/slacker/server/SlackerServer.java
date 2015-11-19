@@ -32,6 +32,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.Verticle;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import pt.davidafsilva.slacker.api.SlackerRequestMessageCodec;
+import pt.davidafsilva.slacker.api.SlackerResponseMessageCodec;
 
 /**
  * This verticle is the main, root verticle for the slacker application.
@@ -61,6 +63,11 @@ public final class SlackerServer extends AbstractVerticle {
 
   @Override
   public void start(final Future<Void> startFuture) throws Exception {
+    // register the shared codecs
+    vertx.eventBus()
+        .registerCodec(new SlackerRequestMessageCodec())
+        .registerCodec(new SlackerResponseMessageCodec());
+
     // deploy the event server first
     deployVerticle(new EventServerVerticle(), eid -> {
       eventVerticleId = eid;
