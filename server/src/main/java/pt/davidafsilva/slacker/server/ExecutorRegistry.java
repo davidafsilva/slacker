@@ -56,6 +56,10 @@ final class ExecutorRegistry {
   // the message to be included when an invalid request is received
   static final String INVALID_REQUEST_MSG = "missing required fields";
 
+  // the message to be included when an invalid version is received
+  static final String INCOMPATIBLE_VERSION_FORMAT = "incompatible version, found %s, expected %s " +
+      "or greater";
+
   // the address format
   private static final String ADDRESS_FORMAT = "%032x.slacker-executor";
 
@@ -89,25 +93,50 @@ final class ExecutorRegistry {
 
     // extract the data from the request
     final String id = request.getString("i");
-    final String version = request.getString("v");
+    final Version version = Version.valueOf(request.getString("v"));
     final String description = request.getString("d", DEFAULT_DESCRIPTION);
 
     // check if there's an executor, if so validate the version
     ExecutorEntry executorEntry = executors.get(id);
     if (executorEntry != null) {
-      //TODO: validate the version
+      // validate the version
+      if (version.lessThan(executorEntry.version)) {
+        // incompatible version
+        errorHandler.handle(String.format(INCOMPATIBLE_VERSION_FORMAT, version,
+            executorEntry.version));
+        return;
+      }
     } else {
       // generate address
       final String address = randomAddress();
 
       // add the executor
       executors.put(id, executorEntry = new ExecutorEntry(id, version, description, address));
-
-      //TODO: monitor instances - at least one must be up! otherwise remove it from the map
     }
+
+    //TODO: monitor instances - at least one must be up! otherwise remove it from the map
 
     // report the success
     successHandler.handle(executorEntry.address);
+  }
+
+  /**
+   * Looks up a previously registered executor by his identifier
+   *
+   * @param id             the executor identifier to lookup
+   * @param addressHandler the handler that shall be called with the executor reachable address
+   * @param errorHandler   the handler that shall be called if the executor does not exist and/or
+   *                       its not registered
+   */
+  void lookup(final String id, final Handler<String> addressHandler,
+      final Handler<Void> errorHandler) {
+    // get the executor entry
+    final ExecutorEntry executorEntry = executors.get(id);
+    if (executorEntry != null) {
+      addressHandler.handle(executorEntry.address);
+    } else {
+      errorHandler.handle(null);
+    }
   }
 
   /**
@@ -169,25 +198,6 @@ final class ExecutorRegistry {
     return valid;
   }
 
-  /**
-   * Looks up a previously registered executor by his identifier
-   *
-   * @param id             the executor identifier to lookup
-   * @param addressHandler the handler that shall be called with the executor reachable address
-   * @param errorHandler   the handler that shall be called if the executor does not exist and/or
-   *                       its not registered
-   */
-  void lookup(final String id, final Handler<String> addressHandler,
-      final Handler<Void> errorHandler) {
-    // get the executor entry
-    final ExecutorEntry executorEntry = executors.get(id);
-    if (executorEntry != null) {
-      addressHandler.handle(executorEntry.address);
-    } else {
-      errorHandler.handle(null);
-    }
-  }
-
   // the executor map entry utility class
   static final class ExecutorEntry {
 
@@ -205,10 +215,10 @@ final class ExecutorRegistry {
      * @param description the executor description
      * @param address     the assigned address to the executor
      */
-    private ExecutorEntry(final String id, final String version, final String description,
+    private ExecutorEntry(final String id, final Version version, final String description,
         final String address) {
       this.id = id;
-      this.version = Version.valueOf(version);
+      this.version = version;
       this.description = description;
       this.address = address;
     }

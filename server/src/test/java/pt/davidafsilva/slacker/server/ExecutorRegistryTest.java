@@ -41,6 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -102,10 +103,41 @@ public class ExecutorRegistryTest {
   }
 
   @Test
-  public void register_success_noDescription() {
+  public void test_register_success_noDescription() {
+    register_success(new JsonObject().put("i", "xpto").put("v", "1.0.0"));
+  }
+
+  @Test
+  public void test_register_success_withDescription() {
+    register_success(new JsonObject().put("i", "xpto").put("d", "woop!").put("v", "1.0.0"));
+  }
+
+  @Test
+  public void test_register_failure_incompatibleVersion() {
+    register_success(new JsonObject().put("i", "xpto").put("v", "1.0.0"));
+
+    // fail with incompatible version
+    executorRegistry.register(new JsonObject().put("i", "xpto").put("v", "0.0.9"), successHandler,
+        registerErrorHandler);
+    verify(successHandler, times(3)).handle(any());
+    verify(registerErrorHandler, times(1))
+        .handle("incompatible version, found 0.0.9, expected 1.0.0 or greater");
+  }
+
+  @Test
+  public void test_register_success_compatibleVersion() {
+    register_success(new JsonObject().put("i", "xpto").put("v", "1.0.0"));
+
+    // fail with incompatible version
+    executorRegistry.register(new JsonObject().put("i", "xpto").put("v", "1.1.0"), successHandler,
+        registerErrorHandler);
+    verify(successHandler, times(4)).handle(any());
+    verify(registerErrorHandler, never()).handle(anyString());
+  }
+
+  private void register_success(final JsonObject request) {
     // register
-    executorRegistry.register(new JsonObject().put("i", "xpto")
-        .put("v", "1.0.0"), successHandler, registerErrorHandler);
+    executorRegistry.register(request, successHandler, registerErrorHandler);
     verify(registerErrorHandler, never()).handle(any());
     verify(successHandler, times(1)).handle(addressCaptor.capture());
     final String address = addressCaptor.getValue();
@@ -114,8 +146,7 @@ public class ExecutorRegistryTest {
     assertEquals(32 + 17, address.length());
 
     // try to register it again
-    executorRegistry.register(new JsonObject().put("i", "xpto")
-        .put("v", "1.0.0"), successHandler, registerErrorHandler);
+    executorRegistry.register(request, successHandler, registerErrorHandler);
     verify(registerErrorHandler, never()).handle(any());
     verify(successHandler, times(2)).handle(address);
 
