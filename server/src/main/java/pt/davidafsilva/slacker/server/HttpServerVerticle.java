@@ -56,9 +56,6 @@ final class HttpServerVerticle extends AbstractVerticle {
   // the logger
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
 
-  // the internal error text response format
-  private static final String ERROR_RESPONSE_FORMAT = "<@%s|%s>: something funky happened..";
-
   // the empty buffer
   private static final Buffer EMPTY_BUF = Buffer.buffer(0);
 
