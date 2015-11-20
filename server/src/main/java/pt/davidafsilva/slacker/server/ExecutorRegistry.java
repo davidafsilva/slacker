@@ -180,8 +180,8 @@ final class ExecutorRegistry {
   }
 
   /**
-   * Validates the specified version string against the Semantic Versioning Specification, which is
-   * the  required format for the executors version.
+   * Validates the specified version string against the Semantic Versioning Specification v2, which
+   * is the required format for the executors version.
    *
    * @param version the version string
    * @return {@code true} if the version is according to the SemVer specification, {@code false}

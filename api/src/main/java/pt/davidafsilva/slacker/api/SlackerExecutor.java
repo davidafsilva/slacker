@@ -105,7 +105,11 @@ public interface SlackerExecutor extends Verticle {
   String description();
 
   /**
-   * Returns a version of the slacker executor that this implementation is supporting.
+   * <p>Returns a version of the slacker executor that this implementation is supporting.</p>
+   *
+   * This version must follow the Semantic Versioning Specification v2, otherwise the registering
+   * of the executor will fail. The documentation regarding SemVer 2 can be found at <a
+   * href="http://semver.org">semver.org</a>
    *
    * @return the slacker executor version
    */
