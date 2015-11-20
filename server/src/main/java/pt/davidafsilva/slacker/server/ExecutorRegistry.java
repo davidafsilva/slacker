@@ -26,14 +26,18 @@ package pt.davidafsilva.slacker.server;
  * #L%
  */
 
+import com.github.zafarkhaja.semver.ParseException;
+import com.github.zafarkhaja.semver.Version;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * The registry where incoming register executor requests are processed (validated a registered)
@@ -42,6 +46,9 @@ import io.vertx.core.json.JsonObject;
  * @author david
  */
 final class ExecutorRegistry {
+
+  // the logger
+  private static final Logger LOGGER = LoggerFactory.getLogger(ExecutorRegistry.class);
 
   // the default description
   static final String DEFAULT_DESCRIPTION = "Description not available";
@@ -124,9 +131,42 @@ final class ExecutorRegistry {
    * @return {@code true} if the request is valid, {@code false} otherwise.
    */
   private boolean isRequestValid(final JsonObject request) {
-    return Arrays.asList("i", "v").stream()
-        .map(request::getString)
-        .noneMatch(v -> v == null || v.isEmpty());
+    // validate the identifier and the version
+    return basicValidation(request, "i") &&
+        basicValidation(request, "v") &&
+        validateVersionFormat(request.getString("v"));
+  }
+
+  /**
+   * Performs a basic validation of the specified field at the executor registry request.
+   * This method only validates if the field is present and it's not empty.
+   *
+   * @param request the executor registry request.
+   * @param field   the field to be validated
+   * @return {@code true} if the field is valid according the above rules, {@code false} otherwise.
+   */
+  private boolean basicValidation(final JsonObject request, final String field) {
+    final String value = request.getString(field);
+    return value != null && !value.isEmpty();
+  }
+
+  /**
+   * Validates the specified version string against the Semantic Versioning Specification, which is
+   * the  required format for the executors version.
+   *
+   * @param version the version string
+   * @return {@code true} if the version is according to the SemVer specification, {@code false}
+   * otherwise.
+   */
+  private boolean validateVersionFormat(final String version) {
+    boolean valid = false;
+    try {
+      Version.valueOf(version);
+      valid = true;
+    } catch (final ParseException e) {
+      LOGGER.info("invalid version received: {}", e, version);
+    }
+    return valid;
   }
 
   /**
@@ -153,7 +193,7 @@ final class ExecutorRegistry {
 
     // properties
     private final String id;
-    private final String version;
+    private final Version version;
     private final String description;
     private final String address;
 
@@ -168,7 +208,7 @@ final class ExecutorRegistry {
     private ExecutorEntry(final String id, final String version, final String description,
         final String address) {
       this.id = id;
-      this.version = version;
+      this.version = Version.valueOf(version);
       this.description = description;
       this.address = address;
     }

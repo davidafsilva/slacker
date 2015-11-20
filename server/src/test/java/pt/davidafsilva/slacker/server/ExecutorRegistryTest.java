@@ -94,6 +94,14 @@ public class ExecutorRegistryTest {
   }
 
   @Test
+  public void register_invalidRequestVersionFormat() {
+    executorRegistry.register(new JsonObject().put("i", "xpto").put("v", "1.meh"), successHandler,
+        registerErrorHandler);
+    verify(successHandler, never()).handle(any());
+    verify(registerErrorHandler, times(1)).handle(ExecutorRegistry.INVALID_REQUEST_MSG);
+  }
+
+  @Test
   public void register_success_noDescription() {
     // register
     executorRegistry.register(new JsonObject().put("i", "xpto")
