@@ -26,6 +26,7 @@ package pt.davidafsilva.slacker.server;
  * #L%
  */
 
+import java.util.Objects;
 import java.util.Optional;
 
 import io.vertx.core.AbstractVerticle;
@@ -56,18 +57,24 @@ final class EventServerVerticle extends AbstractVerticle {
   static final String REQ_SERVER_ADDRESS = "req.slacker-server";
   static final String REG_SERVER_ADDRESS = "reg.slacker-server";
 
+  // the executor registry
+  private final ExecutorRegistry executorRegistry;
+
   // the event consumer instances
   private MessageConsumer<Object> registerConsumer;
   private MessageConsumer<Object> requestConsumer;
 
-  // the executor registry
-  private ExecutorRegistry executorRegistry;
+  /**
+   * Constructs the event server verticle with the given executor registry instance
+   *
+   * @param executorRegistry the executor registry instance
+   */
+  EventServerVerticle(final ExecutorRegistry executorRegistry) {
+    this.executorRegistry = Objects.requireNonNull(executorRegistry, "executorRegistry");
+  }
 
   @Override
   public void start() throws Exception {
-    // create the executor registry
-    executorRegistry = new ExecutorRegistry();
-
     // register the event consumers
     registerConsumer = vertx.eventBus().consumer(REG_SERVER_ADDRESS, this::handlerRegisterEvent);
     requestConsumer = vertx.eventBus().consumer(REQ_SERVER_ADDRESS, this::handlerRequestEvent);

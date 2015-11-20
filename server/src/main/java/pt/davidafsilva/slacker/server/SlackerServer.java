@@ -63,13 +63,16 @@ public final class SlackerServer extends AbstractVerticle {
 
   @Override
   public void start(final Future<Void> startFuture) throws Exception {
+    // create the executor registry
+    final ExecutorRegistry executorRegistry = new ExecutorRegistry();
+
     // register the shared codecs
     vertx.eventBus()
         .registerCodec(new SlackerRequestMessageCodec())
         .registerCodec(new SlackerResponseMessageCodec());
 
     // deploy the event server first
-    deployVerticle(new EventServerVerticle(), eid -> {
+    deployVerticle(new EventServerVerticle(executorRegistry), eid -> {
       eventVerticleId = eid;
       // then deploy the http server
       deployVerticle(new HttpServerVerticle(), hid -> {

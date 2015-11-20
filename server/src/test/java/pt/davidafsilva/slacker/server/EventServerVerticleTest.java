@@ -80,7 +80,12 @@ public class EventServerVerticleTest extends SlackerBaseTest {
         .registerCodec(new SlackerResponseMessageCodec());
 
     // register the event verticle
-    assertTrue(deployVerticle(new EventServerVerticle()).succeeded());
+    assertTrue(deployVerticle(new EventServerVerticle(new ExecutorRegistry())).succeeded());
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void test_nullRegistry() {
+    new EventServerVerticle(null);
   }
 
   @Test
