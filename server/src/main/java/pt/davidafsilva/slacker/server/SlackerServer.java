@@ -61,6 +61,9 @@ public final class SlackerServer extends AbstractVerticle {
   // the http verticle deployment id
   private volatile String httpVerticleId;
 
+  // the help executor id
+  private volatile String helpExecutorId;
+
   @Override
   public void start(final Future<Void> startFuture) throws Exception {
     // create the executor registry
@@ -74,24 +77,33 @@ public final class SlackerServer extends AbstractVerticle {
     // deploy the event server first
     deployVerticle(new EventServerVerticle(executorRegistry), eid -> {
       eventVerticleId = eid;
+
       // then deploy the http server
       deployVerticle(new HttpServerVerticle(), hid -> {
         httpVerticleId = hid;
         LOGGER.info("successfully completed the base slacker server deployment");
         startFuture.complete();
       }, v -> startFuture.fail("failed to deploy http verticle"));
+
+      // and deploy the help executor
+      deployVerticle(new HelpSlackerExecutor(executorRegistry::executors),
+          helpId -> helpExecutorId = helpId,
+          v -> LOGGER.error("failed to deploy help executor"));
+
     }, v -> startFuture.fail("failed to deploy event verticle"));
   }
 
   @Override
   public void stop(final Future<Void> stopFuture) throws Exception {
     // un-deploy the http server first
-    vertx.undeploy(httpVerticleId, er ->
-        // then the event server
-        vertx.undeploy(eventVerticleId, hr -> {
-          LOGGER.info("un-deployment complete.");
-          stopFuture.complete();
-        }));
+    vertx.undeploy(httpVerticleId, er -> {
+      // then the event server and the help executor
+      vertx.undeploy(eventVerticleId, hr -> {
+        LOGGER.info("un-deployment complete.");
+        stopFuture.complete();
+      });
+      vertx.undeploy(helpExecutorId);
+    });
   }
 
   /**

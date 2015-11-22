@@ -33,6 +33,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -100,10 +101,10 @@ final class ExecutorRegistry {
     ExecutorEntry executorEntry = executors.get(id);
     if (executorEntry != null) {
       // validate the version
-      if (version.lessThan(executorEntry.version)) {
+      if (version.lessThan(executorEntry.getVersion())) {
         // incompatible version
         errorHandler.handle(String.format(INCOMPATIBLE_VERSION_FORMAT, version,
-            executorEntry.version));
+            executorEntry.getVersion()));
         return;
       }
     } else {
@@ -114,7 +115,9 @@ final class ExecutorRegistry {
       executors.put(id, executorEntry = new ExecutorEntry(id, version, description, address));
     }
 
-    //TODO: monitor instances - at least one must be up! otherwise remove it from the map
+    //TODO: monitor instances
+    // - at least one must be up! otherwise remove it from the map
+    // - keep the "lower" version of them all
 
     // report the success
     successHandler.handle(executorEntry.address);
@@ -137,6 +140,15 @@ final class ExecutorRegistry {
     } else {
       errorHandler.handle(null);
     }
+  }
+
+  /**
+   * Returns a stream with the current registered/available executors
+   *
+   * @return the registered executor
+   */
+  Stream<ExecutorEntry> executors() {
+    return executors.values().stream();
   }
 
   /**
@@ -199,7 +211,7 @@ final class ExecutorRegistry {
   }
 
   // the executor map entry utility class
-  static final class ExecutorEntry {
+  static class ExecutorEntry {
 
     // properties
     private final String id;
@@ -221,6 +233,33 @@ final class ExecutorRegistry {
       this.version = version;
       this.description = description;
       this.address = address;
+    }
+
+    /**
+     * Returns the executor command identifier
+     *
+     * @return the executor command identifier
+     */
+    String getId() {
+      return id;
+    }
+
+    /**
+     * Returns the registered version of the executor
+     *
+     * @return the executor version
+     */
+    Version getVersion() {
+      return version;
+    }
+
+    /**
+     * Returns the description for the executor
+     *
+     * @return the executor description
+     */
+    String getDescription() {
+      return description;
     }
   }
 }

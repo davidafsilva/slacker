@@ -120,6 +120,20 @@
                 </executions>
             </plugin>
 
+            <!-- the jar configuration -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <!-- JaCoCo -->
             <plugin>
                 <groupId>org.jacoco</groupId>

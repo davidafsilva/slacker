@@ -39,6 +39,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.ServiceHelper;
+import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.spi.FutureFactory;
@@ -117,13 +118,11 @@ public class SlackerServerTest {
   public void test_start_httpDeployFailure() throws Exception {
     server.start(voidFuture);
 
-    verify(vertx, times(1)).deployVerticle(isA(EventServerVerticle.class), startCaptor.capture());
-    Handler<AsyncResult<String>> handler = startCaptor.getValue();
-    assertNotNull(handler);
-    handler.handle(factory.completedFuture());
+    deployWithSuccess(EventServerVerticle.class);
+    deployWithSuccess(HelpSlackerExecutor.class);
 
     verify(vertx, times(1)).deployVerticle(isA(HttpServerVerticle.class), startCaptor.capture());
-    handler = startCaptor.getValue();
+    final Handler<AsyncResult<String>> handler = startCaptor.getValue();
     assertNotNull(handler);
     handler.handle(factory.completedFuture("dummy", true));
 
@@ -132,22 +131,41 @@ public class SlackerServerTest {
   }
 
   @Test
-  public void test_start_success() throws Exception {
+  public void test_start_success_helpVerticleFailure() throws Exception {
     server.start(voidFuture);
 
-    verify(vertx, times(1)).deployVerticle(isA(EventServerVerticle.class), startCaptor.capture());
-    Handler<AsyncResult<String>> handler = startCaptor.getValue();
-    assertNotNull(handler);
-    handler.handle(factory.completedFuture());
+    deployWithSuccess(EventServerVerticle.class);
 
-    verify(vertx, times(1)).deployVerticle(isA(HttpServerVerticle.class), startCaptor.capture());
-    handler = startCaptor.getValue();
+    verify(vertx, times(1)).deployVerticle(isA(HelpSlackerExecutor.class), startCaptor.capture());
+    final Handler<AsyncResult<String>> handler = startCaptor.getValue();
     assertNotNull(handler);
-    handler.handle(factory.completedFuture());
+    handler.handle(factory.completedFuture("dummy", true));
+
+    deployWithSuccess(HttpServerVerticle.class);
 
     verify(voidFuture, times(1)).complete();
     verify(voidFuture, never()).fail(anyString());
     verify(voidFuture, never()).fail(any(Throwable.class));
+  }
+
+  @Test
+  public void test_start_success() throws Exception {
+    server.start(voidFuture);
+
+    deployWithSuccess(EventServerVerticle.class);
+    deployWithSuccess(HelpSlackerExecutor.class);
+    deployWithSuccess(HttpServerVerticle.class);
+
+    verify(voidFuture, times(1)).complete();
+    verify(voidFuture, never()).fail(anyString());
+    verify(voidFuture, never()).fail(any(Throwable.class));
+  }
+
+  private void deployWithSuccess(final Class<? extends Verticle> verticle) {
+    verify(vertx, times(1)).deployVerticle(isA(verticle), startCaptor.capture());
+    final Handler<AsyncResult<String>> handler = startCaptor.getValue();
+    assertNotNull(handler);
+    handler.handle(factory.completedFuture());
   }
 
   @Test
@@ -163,6 +181,8 @@ public class SlackerServerTest {
     handler = stopCaptor.getValue();
     assertNotNull(handler);
     handler.handle(factory.completedFuture());
+
+    verify(vertx, times(1)).undeploy(any());
 
     verify(voidFuture, times(1)).complete();
     verify(voidFuture, never()).fail(anyString());

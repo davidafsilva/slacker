@@ -34,6 +34,9 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 
@@ -154,6 +157,15 @@ public class ExecutorRegistryTest {
     executorRegistry.lookup("xpto", successHandler, lookupErrorHandler);
     verify(successHandler, times(3)).handle(address);
     verify(lookupErrorHandler, never()).handle(any());
+
+    // executors
+    final List<ExecutorRegistry.ExecutorEntry> executors = executorRegistry.executors()
+        .collect(Collectors.toList());
+    assertEquals(1, executors.size());
+    assertEquals(request.getString("i"), executors.get(0).getId());
+    assertEquals(request.getString("d", ExecutorRegistry.DEFAULT_DESCRIPTION),
+        executors.get(0).getDescription());
+    assertEquals(request.getString("v"), executors.get(0).getVersion().toString());
   }
 
   @Test
