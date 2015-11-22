@@ -264,7 +264,7 @@ public class AbstractSlackerExecutorTest extends SlackerBaseTest {
 
     @Override
     public void start() throws Exception {
-      consumer = vertx.eventBus().consumer("slacker-server", r -> {
+      consumer = vertx.eventBus().consumer("reg.slacker-server", r -> {
         final Object body = r.body();
         assertThat(body, instanceOf(JsonObject.class));
         final JsonObject json = (JsonObject) body;

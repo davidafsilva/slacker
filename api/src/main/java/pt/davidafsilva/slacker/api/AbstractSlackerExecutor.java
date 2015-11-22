@@ -104,7 +104,7 @@ public abstract class AbstractSlackerExecutor implements SlackerExecutor {
         .put("i", identifier())
         .put("d", description())
         .put("v", version());
-    vertx.eventBus().send("slacker-server", helloMessage, result -> {
+    vertx.eventBus().send("reg.slacker-server", helloMessage, result -> {
       if (result.succeeded() && JsonObject.class.isInstance(result.result().body())) {
         final JsonObject response = (JsonObject) result.result().body();
         if (response.containsKey("a")) {
