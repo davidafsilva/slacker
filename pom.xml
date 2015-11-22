@@ -6,7 +6,7 @@
 
     <groupId>pt.davidafsilva.slacker</groupId>
     <artifactId>slacker</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <!-- SCM configuration -->
