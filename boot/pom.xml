@@ -24,8 +24,6 @@
             <artifactId>slacker-server</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <!-- slacker core modules -->
     </dependencies>
 
     <build>

@@ -8,7 +8,7 @@
         <format>zip</format>
         <format>tar.gz</format>
     </formats>
-    <includeBaseDirectory>true</includeBaseDirectory>
+    <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <!-- our dependencies -->
         <fileSet>
@@ -20,7 +20,7 @@
             <directory>target</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
-                <include>slacker-bootstrap.jar</include>
+                <include>slacker-boot.jar</include>
             </includes>
         </fileSet>
     </fileSets>
