@@ -84,9 +84,9 @@ final class EventServerVerticle extends AbstractVerticle {
   public void stop(final Future<Void> stopFuture) throws Exception {
     // stop the consumers
     registerConsumer.unregister(r1 -> {
-      LOGGER.info("slacker register consumer closed: {} (cause: {})", r1.succeeded(), r1.cause());
+      LOGGER.info("slacker register consumer closed: {0} (cause: {1})", r1.succeeded(), r1.cause());
       requestConsumer.unregister(r2 -> {
-        LOGGER.info("slacker request consumer closed: {} (cause: {})", r2.succeeded(), r2.cause());
+        LOGGER.info("slacker request consumer closed: {0} (cause: {1})", r2.succeeded(), r2.cause());
         stopFuture.complete();
       });
     });
@@ -100,7 +100,7 @@ final class EventServerVerticle extends AbstractVerticle {
    * @param message the request message event
    */
   private void handlerRegisterEvent(final Message<Object> message) {
-    LOGGER.debug("received register event message: {}", message.body());
+    LOGGER.debug("received register event message: {0}", message.body());
 
     // validate the received event
     if (message.body() == null || !JsonObject.class.isInstance(message.body())) {
@@ -122,7 +122,7 @@ final class EventServerVerticle extends AbstractVerticle {
    * @param message the request message event
    */
   private void handlerRequestEvent(final Message<Object> message) {
-    LOGGER.debug("received request event message: {}", message.body());
+    LOGGER.debug("received request event message: {0}", message.body());
 
     // validate the received event
     if (message.body() == null || !SlackerRequest.class.isInstance(message.body())) {
@@ -148,7 +148,7 @@ final class EventServerVerticle extends AbstractVerticle {
    */
   private void sendRequestToExecutor(final String address, final SlackerRequest request,
       final Message<Object> requestMessage) {
-    LOGGER.debug("forwarding request message to {}..", address);
+    LOGGER.debug("forwarding request message to {0}..", address);
     vertx.eventBus().send(address, request, new DeliveryOptions()
         .setCodecName(SlackerRequestMessageCodec.NAME), reply -> {
       if (reply.succeeded() && SlackerResponse.class.isInstance(reply.result().body())) {

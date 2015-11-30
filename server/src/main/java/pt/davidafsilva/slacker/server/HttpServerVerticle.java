@@ -78,7 +78,7 @@ final class HttpServerVerticle extends AbstractVerticle {
 
     // create the http httpServer options by reading the boot configuration
     final HttpServerOptions options = HttpServerConfiguration.setup(config());
-    LOGGER.debug("starting with the following configuration: {}", config());
+    LOGGER.debug("starting with the following configuration: {0}", config());
 
     // create the actual http httpServer
     httpServer = vertx.createHttpServer(options)
@@ -98,7 +98,7 @@ final class HttpServerVerticle extends AbstractVerticle {
   public void stop(final Future<Void> stopFuture) throws Exception {
     LOGGER.info("closing slacker http server..");
     httpServer.close(r -> {
-      LOGGER.info("slacker http server closed: {} (cause: {})", r.succeeded(), r.cause());
+      LOGGER.info("slacker http server closed: {0} (cause: {1})", r.succeeded(), r.cause());
       stopFuture.complete();
     });
   }
@@ -112,7 +112,7 @@ final class HttpServerVerticle extends AbstractVerticle {
     LOGGER.info("received command request");
     // create the request data from the POST request
     final Optional<SlackerRequest> slackRequest = HttpContextSlackerRequestParser.parse(context);
-    LOGGER.debug("request data: {}", slackRequest);
+    LOGGER.debug("request data: {0}", slackRequest);
 
     // dispatch the request to the slacker server
     if (slackRequest.isPresent()) {
@@ -154,7 +154,7 @@ final class HttpServerVerticle extends AbstractVerticle {
    */
   private void endRequest(final RoutingContext context, final ResultCode code,
       final Optional<String> response) {
-    LOGGER.info("terminating request with code {} and message {}", code, response);
+    LOGGER.info("terminating request with code {0} and message {1}", code, response);
     final Buffer message = response
         .map(m -> new JsonObject().put("text", m).toString())
         .map(Buffer::buffer)

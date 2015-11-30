@@ -205,7 +205,7 @@ final class ExecutorRegistry {
       Version.valueOf(version);
       valid = true;
     } catch (final ParseException e) {
-      LOGGER.info("invalid version received: {}", e, version);
+      LOGGER.info("invalid version received: {0}", e, version);
     }
     return valid;
   }

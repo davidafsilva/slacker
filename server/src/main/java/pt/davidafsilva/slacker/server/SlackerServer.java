@@ -117,10 +117,10 @@ public final class SlackerServer extends AbstractVerticle {
       final Handler<Void> failure) {
     vertx.deployVerticle(v, res -> {
       if (res.succeeded()) {
-        LOGGER.info("successfully deployed {}", v.getClass().getSimpleName());
+        LOGGER.info("successfully deployed {0}", v.getClass().getSimpleName());
         success.handle(res.result());
       } else {
-        LOGGER.error("failed to deploy {}", res.cause(), v.getClass().getSimpleName());
+        LOGGER.error("failed to deploy {0}", res.cause(), v.getClass().getSimpleName());
         failure.handle(null);
       }
     });

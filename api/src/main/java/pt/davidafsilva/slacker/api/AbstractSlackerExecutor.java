@@ -97,7 +97,7 @@ public abstract class AbstractSlackerExecutor implements SlackerExecutor {
 
   @Override
   public void start(final Future<Void> startFuture) throws Exception {
-    LOGGER.info("starting {}..", identifier());
+    LOGGER.info("starting {0}..", identifier());
 
     // start the HELLO slacker protocol
     final JsonObject helloMessage = new JsonObject()
@@ -110,7 +110,7 @@ public abstract class AbstractSlackerExecutor implements SlackerExecutor {
         if (response.containsKey("a")) {
           // everything went smoothly - register the listener and complete the startup
           registerListener(response.getString("a"));
-          LOGGER.info("successfully registered '{}' executor", identifier());
+          LOGGER.info("successfully registered {0} executor", identifier());
           startFuture.complete();
         } else {
           failStart(startFuture, "no address to bind was received");
@@ -235,7 +235,7 @@ public abstract class AbstractSlackerExecutor implements SlackerExecutor {
 
   @Override
   public void stop(final Future<Void> stopFuture) throws Exception {
-    LOGGER.info("stopping {}..", identifier());
+    LOGGER.info("stopping {0}..", identifier());
     consumer.ifPresent(MessageConsumer::unregister);
     stopFuture.complete();
   }
